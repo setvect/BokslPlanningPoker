@@ -1,4 +1,4 @@
-# 플래닝 포커 (Planning Poker)
+# 복슬 플래닝 포커 (Boksl Planning Poker)
 
 🎯 **웹 기반 애자일 스프린트 플래닝 도구**
 

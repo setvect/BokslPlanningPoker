@@ -106,12 +106,20 @@ export function useGame() {
       setLoading(true);
       clearError();
 
-      await socket.selectCard({ 
+      const response = await socket.selectCard({ 
         roomId: gameState.room.id, 
         card 
       });
       
-      console.log('카드 선택 성공:', card);
+      // 서버에서 result를 받았다면 (공개 상태에서 카드 변경) 즉시 업데이트
+      if (response.result) {
+        setGameState(prev => ({
+          ...prev,
+          gameResult: response.result || null,
+          loading: false
+        }));
+      }
+      
       setLoading(false);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '카드 선택에 실패했습니다';

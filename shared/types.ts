@@ -117,6 +117,7 @@ export interface CreateRoomResponse {
 export interface CardSelectionResponse {
   success: boolean;
   user?: User;
+  result?: GameResult;
   error?: ErrorInfo;
 }
 

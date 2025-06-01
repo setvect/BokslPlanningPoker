@@ -60,7 +60,7 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
                     game.isCardSelected(card) ? 'selected' : ''
                   }`}
                   onClick={() => game.selectCard(card)}
-                  disabled={game.loading || currentRoom?.gameState !== 'selecting'}
+                  disabled={game.loading || !currentRoom || (currentRoom.gameState !== 'selecting' && currentRoom.gameState !== 'revealed')}
                 >
                   {card}
                 </button>

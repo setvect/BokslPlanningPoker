@@ -135,7 +135,7 @@ class GameStore {
   }
   
   // 카드 선택
-  selectCard(socketId: string, card: string): { room: Room, user: User } {
+  selectCard(socketId: string, card: string): { room: Room, user: User, result?: GameResult } {
     const roomId = this.userRoomMap.get(socketId);
     if (!roomId) throw new Error(ERROR_MESSAGES[ERROR_CODES.USER_NOT_IN_ROOM]);
     
@@ -145,7 +145,8 @@ class GameStore {
     const user = Array.from(room.users.values()).find(u => u.socketId === socketId);
     if (!user) throw new Error(ERROR_MESSAGES[ERROR_CODES.USER_NOT_FOUND]);
     
-    if (room.gameState !== GameState.SELECTING) {
+    // SELECTING과 REVEALED 상태에서 모두 카드 선택 허용
+    if (room.gameState !== GameState.SELECTING && room.gameState !== GameState.REVEALED) {
       throw new Error(ERROR_MESSAGES[ERROR_CODES.GAME_NOT_IN_PROGRESS]);
     }
     
@@ -157,7 +158,13 @@ class GameStore {
     user.lastActivity = new Date().toISOString();
     room.lastActivity = new Date().toISOString();
     
-    return { room, user };
+    // 카드가 공개된 상태라면 즉시 결과 재계산
+    let result: GameResult | undefined;
+    if (room.gameState === GameState.REVEALED) {
+      result = this.calculateGameResult(room);
+    }
+    
+    return { room, user, result };
   }
   
   // 카드 공개
@@ -238,7 +245,7 @@ class GameStore {
   }
   
   // 게임 결과 계산
-  private calculateGameResult(room: Room): GameResult {
+  calculateGameResult(room: Room): GameResult {
     const users = Array.from(room.users.values());
     const cards: { [userId: string]: any } = {};
     const selectedCards: string[] = [];
@@ -413,6 +420,18 @@ export function setupSocketHandlers(io: Server) {
         console.log(`🔍 브로드캐스트 전송: ROOM_UPDATE to room ${room.id}`, roomUpdateEvent);
         socket.to(room.id).emit(SOCKET_EVENTS.ROOM_UPDATE, roomUpdateEvent);
         
+        // 카드가 공개된 상태라면 새로운 사용자에게 현재 게임 결과 전송
+        if (room.gameState === GameState.REVEALED) {
+          const currentResult = gameStore.calculateGameResult(room);
+          socket.emit(SOCKET_EVENTS.CARDS_REVEALED, {
+            roomId: room.id,
+            gameState: room.gameState,
+            result: currentResult
+          } as GameUpdateEvent);
+          
+          console.log(`🔍 새 사용자에게 현재 게임 결과 전송: ${user.name}, 평균: ${currentResult.average}`);
+        }
+        
         console.log(`✅ 사용자 참여 완료: ${user.name} -> 방 ${room.id}`);
       } catch (error) {
         console.error('❌ 방 참여 실패:', error);
@@ -426,7 +445,7 @@ export function setupSocketHandlers(io: Server) {
     // 카드 선택
     socket.on(SOCKET_EVENTS.SELECT_CARD, (data: SelectCardPayload, callback: (response: CardSelectionResponse) => void) => {
       try {
-        const { room, user } = gameStore.selectCard(socket.id, data.card);
+        const { room, user, result } = gameStore.selectCard(socket.id, data.card);
         
         const serializedRoom = gameStore.serializeRoom(room);
         const serializedUser = { ...user };
@@ -434,7 +453,8 @@ export function setupSocketHandlers(io: Server) {
         
         callback({
           success: true,
-          user: serializedUser
+          user: serializedUser,
+          result: result
         });
         
         // 방의 모든 사용자에게 업데이트 브로드캐스트
@@ -444,7 +464,18 @@ export function setupSocketHandlers(io: Server) {
           action: 'card_selected'
         } as UserUpdateEvent);
         
-        console.log(`카드 선택: ${user.name} -> ${data.card}`);
+        // 카드가 공개된 상태에서 변경했다면 게임 결과도 브로드캐스트
+        if (room.gameState === GameState.REVEALED && result) {
+          io.to(room.id).emit(SOCKET_EVENTS.CARDS_REVEALED, {
+            roomId: room.id,
+            gameState: room.gameState,
+            result
+          } as GameUpdateEvent);
+          
+          console.log(`🔄 카드 변경으로 실시간 결과 업데이트: ${user.name} -> ${data.card}, 평균: ${result.average}`);
+        } else {
+          console.log(`카드 선택: ${user.name} -> ${data.card}`);
+        }
       } catch (error) {
         console.error('카드 선택 실패:', error);
         callback({

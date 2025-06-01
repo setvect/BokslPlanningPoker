@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  # 백엔드 서버
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+    command: npm run dev
+    depends_on:
+      - client
+
+  # 프론트엔드 클라이언트
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.dev
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - VITE_SERVER_URL=http://localhost:3001
+    command: npm run dev
+
+  # 개발용 통합 서비스 (옵션)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+    profiles:
+      - production
+
+networks:
+  default:
+    name: planning-poker-network 

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import MainPage from './components/MainPage';
 import JoinRoom from './components/JoinRoom';
 import GameRoom from './components/GameRoom';
@@ -24,6 +24,19 @@ const saveUserName = (userName: string): void => {
   }
 };
 
+// URL에서 방ID 추출
+const getRoomIdFromUrl = (): string | null => {
+  const path = window.location.pathname;
+  const match = path.match(/^\/room\/([A-Z0-9]{3,20})$/);
+  return match ? match[1] : null;
+};
+
+// URL 변경 (히스토리 관리)
+const updateUrl = (roomId?: string): void => {
+  const newUrl = roomId ? `/room/${roomId}` : '/';
+  window.history.pushState({}, '', newUrl);
+};
+
 function App() {
   console.log('App 컴포넌트 시작');
   
@@ -43,6 +56,36 @@ function App() {
     loading: game.loading 
   });
 
+  // 페이지 로드 시 URL에서 방ID 확인 및 자동 입장
+  useEffect(() => {
+    if (!game.isConnected || game.isConnecting) return;
+    
+    const roomId = getRoomIdFromUrl();
+    if (!roomId || game.room) return; // URL에 방ID가 없거나 이미 방에 있으면 무시
+    
+    console.log('🔍 URL에서 방ID 발견:', roomId);
+    
+    const savedUserName = getSavedUserName();
+    if (savedUserName) {
+      // 저장된 사용자 이름으로 바로 입장 시도
+      game.joinRoom(roomId, savedUserName)
+        .then(() => {
+          console.log('✅ URL 방 자동 입장 성공:', roomId);
+          setAppState('game');
+        })
+        .catch((error) => {
+          console.log('❌ URL 방 입장 실패:', error.message);
+          // 방이 존재하지 않으면 메인으로 이동
+          updateUrl(); // URL을 메인(/)으로 변경
+          setAppState('main');
+        });
+    } else {
+      // 사용자 이름이 없으면 입력 화면으로
+      setPendingRoomData({ roomId, roomName: '' });
+      setAppState('join');
+    }
+  }, [game.isConnected, game.isConnecting, game.room]);
+
   // 방 생성 핸들러
   const handleCreateRoom = useCallback(async (roomName: string) => {
     const savedUserName = getSavedUserName();
@@ -50,6 +93,7 @@ function App() {
       try {
         const roomId = await game.createRoom(roomName, savedUserName);
         if (roomId) {
+          updateUrl(roomId); // URL을 /room/{roomId}로 변경
           setAppState('game');
         }
       } catch (error) {
@@ -72,6 +116,7 @@ function App() {
       // 바로 방 참여 시도
       game.joinRoom(roomId, savedUserName)
         .then(() => {
+          updateUrl(roomId); // URL을 /room/{roomId}로 변경
           setAppState('game');
         })
         .catch(() => {
@@ -96,9 +141,13 @@ function App() {
       if (pendingRoomData.roomId) {
         // 기존 방 참여
         await game.joinRoom(pendingRoomData.roomId, userName);
+        updateUrl(pendingRoomData.roomId); // URL 업데이트
       } else {
         // 새 방 생성
-        await game.createRoom(pendingRoomData.roomName, userName);
+        const roomId = await game.createRoom(pendingRoomData.roomName, userName);
+        if (roomId) {
+          updateUrl(roomId); // URL 업데이트
+        }
       }
       
       setPendingRoomData(null);
@@ -112,6 +161,7 @@ function App() {
   // 뒤로가기 핸들러
   const handleBack = useCallback(() => {
     setPendingRoomData(null);
+    updateUrl(); // URL을 메인(/)으로 변경
     setAppState('main');
     game.clearError();
   }, [game]);
@@ -120,10 +170,12 @@ function App() {
   const handleLeaveRoom = useCallback(async () => {
     try {
       await game.leaveRoom();
+      updateUrl(); // URL을 메인(/)으로 변경
       setAppState('main');
     } catch (error) {
       console.error('방 나가기 실패:', error);
       // 에러가 발생해도 메인으로 이동
+      updateUrl(); // URL을 메인(/)으로 변경
       setAppState('main');
     }
   }, [game]);

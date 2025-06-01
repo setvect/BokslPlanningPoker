@@ -32,6 +32,7 @@ interface User extends SharedUser {
 
 interface Room extends Omit<SharedRoom, 'users'> {
   users: Map<string, User>;
+  emptyTimestamp?: string; // 방이 빈 시간 (새로고침 대응용)
 }
 
 // 메모리 기반 데이터 저장소
@@ -83,6 +84,12 @@ class GameStore {
     this.userRoomMap.set(user.socketId, roomId);
     room.lastActivity = new Date().toISOString();
     
+    // 방이 빈 상태에서 사용자가 들어오면 emptyTimestamp 초기화
+    if (room.emptyTimestamp) {
+      delete room.emptyTimestamp;
+      console.log(`🔍 빈 방에 사용자 입장: ${roomId}, 삭제 타이머 취소`);
+    }
+    
     return room;
   }
   
@@ -101,10 +108,27 @@ class GameStore {
     this.userRoomMap.delete(socketId);
     room.lastActivity = new Date().toISOString();
     
-    // 방이 비었으면 삭제
+    // 방이 비었을 때 즉시 삭제하지 않고 타이머 설정 (새로고침 대응)
     if (room.users.size === 0) {
-      this.rooms.delete(roomId);
-      return { room: null, user };
+      console.log(`🔍 방이 비었음: ${roomId}, 3분 후 삭제 예정`);
+      room.emptyTimestamp = new Date().toISOString();
+      
+      // 3분 후 방 삭제 (다른 사용자가 들어오지 않으면)
+      setTimeout(() => {
+        const currentRoom = this.rooms.get(roomId);
+        if (currentRoom && currentRoom.users.size === 0) {
+          console.log(`🗑️ 빈 방 자동 삭제: ${roomId}`);
+          this.rooms.delete(roomId);
+        }
+      }, 3 * 60 * 1000); // 3분
+      
+      return { room, user };
+    }
+    
+    // 방에 사용자가 남아있으면 emptyTimestamp 초기화
+    if (room.emptyTimestamp) {
+      delete room.emptyTimestamp;
+      console.log(`🔍 방에 사용자 복귀: ${roomId}, 삭제 타이머 취소`);
     }
     
     return { room, user };

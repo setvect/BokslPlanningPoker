@@ -1,10 +1,12 @@
 import express from 'express';
 import { createServer } from 'http';
-import { Server as SocketIOServer } from 'socket.io';
+import { Server } from 'socket.io';
 import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import path from 'path';
+import { setupSocketHandlers } from './socket/handlers';
+import { GAME_CONFIG } from '../../shared';
 
 // 환경 변수 설정
 const PORT = process.env.PORT || 3001;
@@ -16,64 +18,62 @@ const app = express();
 const server = createServer(app);
 
 // Socket.IO 서버 생성
-const io = new SocketIOServer(server, {
+const io = new Server(server, {
   cors: {
-    origin: CORS_ORIGIN,
-    methods: ['GET', 'POST']
-  }
+    origin: ['http://localhost:5173', 'http://localhost:3000'],
+    methods: ['GET', 'POST'],
+    credentials: true
+  },
+  transports: ['websocket', 'polling']
 });
 
 // 미들웨어 설정
 app.use(helmet({
-  contentSecurityPolicy: false // Socket.IO를 위해 비활성화
+  contentSecurityPolicy: false
 }));
 app.use(compression());
 app.use(cors({
-  origin: CORS_ORIGIN,
+  origin: ['http://localhost:5173', 'http://localhost:3000'],
   credentials: true
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 정적 파일 서빙 (프로덕션 환경에서 클라이언트 빌드 파일)
-if (NODE_ENV === 'production') {
-  const publicPath = path.join(__dirname, '..', 'public');
-  app.use(express.static(publicPath));
-  
-  // React 라우팅을 위한 fallback
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(publicPath, 'index.html'));
-  });
-}
+// 정적 파일 서빙 (프로덕션용 - 클라이언트 빌드 파일)
+const clientBuildPath = path.join(__dirname, '../../client/dist');
+app.use(express.static(clientBuildPath));
 
-// 기본 라우트
-app.get('/api/health', (req, res) => {
+// API 라우트
+app.get('/health', (req, res) => {
   res.json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),
-    environment: NODE_ENV 
+    version: '1.0.0',
+    config: {
+      maxRooms: GAME_CONFIG.MAX_ROOMS,
+      maxUsersPerRoom: GAME_CONFIG.MAX_USERS_PER_ROOM
+    }
   });
 });
 
-// 간단한 API 상태 엔드포인트
-app.get('/health', (req, res) => {
-  res.status(200).send('OK');
+// 통계 API
+app.get('/api/stats', (req, res) => {
+  // TODO: 실제 통계 데이터 조회 구현
+  res.json({
+    totalRooms: 0,
+    totalUsers: 0,
+    activeRooms: 0,
+    averageUsersPerRoom: 0
+  });
 });
 
-// Socket.IO 연결 처리
-io.on('connection', (socket) => {
-  console.log(`사용자 연결됨: ${socket.id}`);
-  
-  // 기본 이벤트 처리
-  socket.on('disconnect', () => {
-    console.log(`사용자 연결 해제됨: ${socket.id}`);
-  });
-  
-  // 테스트용 핑퐁 이벤트
-  socket.on('ping', () => {
-    socket.emit('pong');
-  });
+// SPA 라우팅 지원 (모든 경로를 index.html로)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(clientBuildPath, 'index.html'));
 });
+
+// Socket.io 이벤트 핸들러 설정
+setupSocketHandlers(io);
 
 // 에러 핸들링
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -90,20 +90,27 @@ app.use((req: express.Request, res: express.Response) => {
 
 // 서버 시작
 server.listen(PORT, () => {
-  console.log(`🚀 서버가 포트 ${PORT}에서 시작되었습니다.`);
-  console.log(`📱 환경: ${NODE_ENV}`);
-  console.log(`🌐 CORS 허용 원본: ${CORS_ORIGIN}`);
-  
-  if (NODE_ENV === 'development') {
-    console.log(`🔧 개발 서버: http://localhost:${PORT}`);
-  }
+  console.log(`🚀 플래닝 포커 서버가 시작되었습니다!`);
+  console.log(`📍 주소: http://localhost:${PORT}`);
+  console.log(`🏠 헬스체크: http://localhost:${PORT}/health`);
+  console.log(`📊 통계: http://localhost:${PORT}/api/stats`);
+  console.log(`🎮 최대 방 개수: ${GAME_CONFIG.MAX_ROOMS}`);
+  console.log(`👥 방당 최대 인원: ${GAME_CONFIG.MAX_USERS_PER_ROOM}`);
 });
 
-// Graceful shutdown
+// 우아한 종료 처리
 process.on('SIGTERM', () => {
-  console.log('SIGTERM 신호를 받았습니다. 서버를 종료합니다...');
+  console.log('SIGTERM 신호 수신됨. 서버를 종료합니다...');
   server.close(() => {
-    console.log('서버가 정상적으로 종료되었습니다.');
+    console.log('서버가 종료되었습니다.');
+    process.exit(0);
+  });
+});
+
+process.on('SIGINT', () => {
+  console.log('SIGINT 신호 수신됨. 서버를 종료합니다...');
+  server.close(() => {
+    console.log('서버가 종료되었습니다.');
     process.exit(0);
   });
 });

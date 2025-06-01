@@ -160,10 +160,29 @@ export const ENV_CONFIG = {
     ENABLE_DEBUG: true,
   },
   PRODUCTION: {
-    SOCKET_URL: process.env.SOCKET_URL || '',
+    SOCKET_URL: '', // 클라이언트에서는 상대 경로 사용, 서버에서는 환경변수 사용
     LOG_LEVEL: 'error',
     ENABLE_DEBUG: false,
   },
+} as const;
+
+// 서버 전용 환경 설정 (서버에서만 사용)
+export const getServerConfig = () => {
+  const isDevelopment = typeof process !== 'undefined' && process.env.NODE_ENV !== 'production';
+  
+  return {
+    SOCKET_URL: typeof process !== 'undefined' ? process.env.SOCKET_URL || 'http://localhost:3001' : 'http://localhost:3001',
+    PORT: typeof process !== 'undefined' ? parseInt(process.env.PORT || '3001', 10) : 3001,
+    NODE_ENV: typeof process !== 'undefined' ? process.env.NODE_ENV || 'development' : 'development',
+    LOG_LEVEL: isDevelopment ? 'debug' : 'error',
+    ENABLE_DEBUG: isDevelopment,
+  };
+};
+
+// 클라이언트용 기본 설정
+export const CLIENT_CONFIG = {
+  DEVELOPMENT_SOCKET_URL: 'http://localhost:3001',
+  PRODUCTION_SOCKET_URL: '', // 클라이언트에서 빈 문자열이면 현재 origin 사용
 } as const;
 
 // 정규식 패턴

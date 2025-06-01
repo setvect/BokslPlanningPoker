@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { SOCKET_EVENTS } from '../../../shared/socket-events.ts';
+import { CLIENT_CONFIG } from '../../../shared/constants.ts';
 import type { 
   CreateRoomPayload, 
   JoinRoomPayload, 
@@ -26,7 +27,13 @@ interface SocketState {
 }
 
 export function useSocket(options: UseSocketOptions = {}) {
-  const { autoConnect = true, url = 'http://localhost:3001' } = options;
+  // 환경에 따른 Socket URL 결정
+  const getSocketUrl = () => {
+    const isDevelopment = window.location.hostname === 'localhost';
+    return isDevelopment ? CLIENT_CONFIG.DEVELOPMENT_SOCKET_URL : window.location.origin;
+  };
+  
+  const { autoConnect = true, url = getSocketUrl() } = options;
   
   const socketRef = useRef<Socket | null>(null);
   const [socketState, setSocketState] = useState<SocketState>({

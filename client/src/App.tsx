@@ -25,6 +25,8 @@ const saveUserName = (userName: string): void => {
 };
 
 function App() {
+  console.log('App 컴포넌트 시작');
+  
   const [appState, setAppState] = useState<AppState>('main');
   const [pendingRoomData, setPendingRoomData] = useState<{
     roomId: string;
@@ -32,6 +34,14 @@ function App() {
   } | null>(null);
 
   const game = useGame();
+  
+  console.log('App 상태:', { 
+    appState, 
+    isConnected: game.isConnected, 
+    isConnecting: game.isConnecting,
+    socketError: game.socketError,
+    loading: game.loading 
+  });
 
   // 방 생성 핸들러
   const handleCreateRoom = useCallback(async (roomName: string) => {

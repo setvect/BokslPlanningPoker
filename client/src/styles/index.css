@@ -1,0 +1,128 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply font-sans;
+  }
+  
+  body {
+    @apply bg-gray-50 text-gray-900 antialiased;
+  }
+  
+  * {
+    @apply box-border;
+  }
+}
+
+@layer components {
+  /* 카드 컴포넌트 스타일 */
+  .planning-card {
+    @apply relative bg-white border-2 border-gray-200 rounded-lg p-4 
+           text-center cursor-pointer transition-all duration-200 
+           hover:border-primary-400 hover:shadow-md
+           active:scale-95;
+  }
+  
+  .planning-card.selected {
+    @apply border-primary-500 bg-primary-50 text-primary-700;
+  }
+  
+  .planning-card.revealed {
+    @apply border-success-400 bg-success-50;
+  }
+  
+  /* 버튼 스타일 */
+  .btn {
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200
+           focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+  
+  .btn-primary {
+    @apply bg-primary-600 text-white hover:bg-primary-700 
+           focus:ring-primary-500 disabled:bg-gray-400;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-200 text-gray-800 hover:bg-gray-300 
+           focus:ring-gray-500;
+  }
+  
+  .btn-success {
+    @apply bg-success-600 text-white hover:bg-success-700 
+           focus:ring-success-500;
+  }
+  
+  .btn-warning {
+    @apply bg-warning-600 text-white hover:bg-warning-700 
+           focus:ring-warning-500;
+  }
+  
+  /* 입력 필드 스타일 */
+  .input {
+    @apply block w-full px-3 py-2 border border-gray-300 rounded-lg
+           focus:outline-none focus:ring-2 focus:ring-primary-500 
+           focus:border-primary-500 disabled:bg-gray-100;
+  }
+  
+  /* 모달 스타일 */
+  .modal-overlay {
+    @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50;
+  }
+  
+  .modal-content {
+    @apply bg-white rounded-lg p-6 max-w-md w-full mx-4 animate-slide-up;
+  }
+  
+  /* 사용자 상태 표시 */
+  .user-status {
+    @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium;
+  }
+  
+  .user-status.online {
+    @apply bg-success-100 text-success-800;
+  }
+  
+  .user-status.offline {
+    @apply bg-gray-100 text-gray-600;
+  }
+  
+  .user-status.voted {
+    @apply bg-primary-100 text-primary-800;
+  }
+}
+
+@layer utilities {
+  /* 반응형 그리드 */
+  .card-grid {
+    @apply grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5;
+  }
+  
+  /* 텍스트 크기 조정 */
+  .text-responsive {
+    @apply text-sm sm:text-base lg:text-lg;
+  }
+  
+  /* 스크롤바 스타일링 */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(203 213 225) rgb(248 250 252);
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    @apply bg-gray-100;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded-full;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-400;
+  }
+} 

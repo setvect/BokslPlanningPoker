@@ -216,11 +216,34 @@ export function useGame() {
     // 방 업데이트 (사용자 참여/나감, 이름 변경 등)
     unsubscribers.push(
       socket.onRoomUpdate((data) => {
-        console.log('방 업데이트:', data.type, data.user?.name);
-        setGameState(prev => ({
-          ...prev,
-          room: data.room
-        }));
+        console.log('🔍 방 업데이트 이벤트 수신:', {
+          type: data.type,
+          newUser: data.user?.name,
+          roomId: data.room?.id,
+          totalUsers: data.room?.users?.length
+        });
+        console.log('🔍 전체 방 데이터:', data);
+        
+        setGameState(prev => {
+          console.log('🔍 이전 상태:', {
+            roomId: prev.room?.id,
+            usersCount: prev.room?.users?.length,
+            users: prev.room?.users?.map(u => u.name)
+          });
+          
+          const newState = {
+            ...prev,
+            room: data.room
+          };
+          
+          console.log('🔍 새 상태:', {
+            roomId: newState.room?.id,
+            usersCount: newState.room?.users?.length,
+            users: newState.room?.users?.map(u => u.name)
+          });
+          
+          return newState;
+        });
       })
     );
 

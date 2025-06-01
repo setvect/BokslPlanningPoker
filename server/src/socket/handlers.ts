@@ -276,6 +276,8 @@ export function setupSocketHandlers(io: Server) {
     // 방 생성
     socket.on(SOCKET_EVENTS.CREATE_ROOM, (data: CreateRoomPayload, callback: (response: CreateRoomResponse) => void) => {
       try {
+        console.log(`🔍 방 생성 시도: ${data.userName} -> 방이름 "${data.roomName}"`);
+        
         if (!Utils.validateRoomName(data.roomName)) {
           return callback({
             success: false,
@@ -304,12 +306,17 @@ export function setupSocketHandlers(io: Server) {
         const room = gameStore.createRoom(data.roomName, user);
         user.roomId = room.id;
         
+        console.log(`🔍 방 생성 후 상태: 방 ${room.id} 사용자 수: ${room.users.size}`);
+        
         // 소켓을 방에 참여
         socket.join(room.id);
+        console.log(`🔍 소켓 방 참여: ${socket.id} -> 방 ${room.id}`);
         
         const serializedRoom = gameStore.serializeRoom(room);
         const serializedUser = { ...user };
         delete (serializedUser as any).socketId;
+        
+        console.log(`🔍 직렬화된 방 정보: 사용자 수 ${serializedRoom.users.length}`);
         
         callback({
           success: true,
@@ -317,9 +324,9 @@ export function setupSocketHandlers(io: Server) {
           user: serializedUser
         });
         
-        console.log(`방 생성됨: ${room.id} by ${user.name}`);
+        console.log(`✅ 방 생성 완료: ${room.id} by ${user.name}`);
       } catch (error) {
-        console.error('방 생성 실패:', error);
+        console.error('❌ 방 생성 실패:', error);
         callback({
           success: false,
           error: { code: ERROR_CODES.INTERNAL_ERROR, message: (error as Error).message }
@@ -330,6 +337,8 @@ export function setupSocketHandlers(io: Server) {
     // 방 참여
     socket.on(SOCKET_EVENTS.JOIN_ROOM, (data: JoinRoomPayload, callback: (response: JoinRoomResponse) => void) => {
       try {
+        console.log(`🔍 방 참여 시도: ${data.userName} -> 방 ${data.roomId}`);
+        
         if (!Utils.validateUserName(data.userName)) {
           return callback({
             success: false,
@@ -348,14 +357,21 @@ export function setupSocketHandlers(io: Server) {
           socketId: socket.id
         };
         
+        console.log(`🔍 방 참여 전 방 상태 확인: 방 ${data.roomId} 사용자 수: ${gameStore.getRoom(data.roomId)?.users.size || 0}`);
+        
         const room = gameStore.joinRoom(data.roomId, user);
+        
+        console.log(`🔍 방 참여 후 방 상태: 방 ${room.id} 사용자 수: ${room.users.size}`);
         
         // 소켓을 방에 참여
         socket.join(room.id);
+        console.log(`🔍 소켓 방 참여: ${socket.id} -> 방 ${room.id}`);
         
         const serializedRoom = gameStore.serializeRoom(room);
         const serializedUser = { ...user };
         delete (serializedUser as any).socketId;
+        
+        console.log(`🔍 직렬화된 방 정보: 사용자 수 ${serializedRoom.users.length}`);
         
         callback({
           success: true,
@@ -364,15 +380,18 @@ export function setupSocketHandlers(io: Server) {
         });
         
         // 다른 사용자들에게 새 사용자 참여 알림
-        socket.to(room.id).emit(SOCKET_EVENTS.ROOM_UPDATE, {
+        const roomUpdateEvent = {
           room: serializedRoom,
           type: 'user_joined',
           user: serializedUser
-        } as RoomUpdateEvent);
+        } as RoomUpdateEvent;
         
-        console.log(`사용자 참여: ${user.name} -> 방 ${room.id}`);
+        console.log(`🔍 브로드캐스트 전송: ROOM_UPDATE to room ${room.id}`, roomUpdateEvent);
+        socket.to(room.id).emit(SOCKET_EVENTS.ROOM_UPDATE, roomUpdateEvent);
+        
+        console.log(`✅ 사용자 참여 완료: ${user.name} -> 방 ${room.id}`);
       } catch (error) {
-        console.error('방 참여 실패:', error);
+        console.error('❌ 방 참여 실패:', error);
         callback({
           success: false,
           error: { code: ERROR_CODES.ROOM_NOT_FOUND, message: (error as Error).message }

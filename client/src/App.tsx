@@ -206,6 +206,7 @@ function App() {
           roomName={game.room.name}
           userName={game.currentUser.name}
           onLeave={handleLeaveRoom}
+          game={game}
         />
       );
 

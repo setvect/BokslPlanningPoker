@@ -1,5 +1,6 @@
 import type { PlanningPokerCard } from '../types';
 import type { useGame } from '../hooks/useGame';
+import PlayerList from './PlayerList';
 
 interface GameRoomProps {
   roomId: string
@@ -26,13 +27,34 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
   const selectedUsers = users.filter(user => user.selectedCard).length;
   const selectedPercentage = totalUsers > 0 ? (selectedUsers / totalUsers) * 100 : 0;
 
+  // 카드별 특수 스타일 클래스 반환
+  const getCardSpecialClass = (card: PlanningPokerCard) => {
+    switch (card) {
+      case '?':
+        return 'planning-card-question';
+      case '커피':
+        return 'planning-card-coffee';
+      case '100':
+        return 'planning-card-infinity';
+      default:
+        return '';
+    }
+  };
+
   return (
     <div className="max-w-6xl mx-auto">
       {/* 헤더 */}
       <div className="bg-white rounded-xl p-6 shadow-lg mb-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{roomName}</h1>
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-2xl font-bold text-gray-900">{roomName}</h1>
+              <span className={`game-state-indicator ${
+                currentRoom?.gameState === 'revealed' ? 'game-state-revealed' : 'game-state-selecting'
+              }`}>
+                {currentRoom?.gameState === 'revealed' ? '📊 카드 공개됨' : '🎯 카드 선택 중'}
+              </span>
+            </div>
             <p className="text-gray-600">방 ID: {roomId} | 사용자: {userName}</p>
           </div>
           <button
@@ -48,23 +70,58 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
         {/* 카드 선택 영역 */}
         <div className="lg:col-span-2">
           <div className="bg-white rounded-xl p-6 shadow-lg">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">
-              카드 선택
-            </h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-gray-900">
+                카드 선택
+              </h2>
+              <div className="text-sm text-gray-500">
+                {currentRoom?.gameState === 'revealed' ? '카드 변경 가능' : '카드를 선택하세요'}
+              </div>
+            </div>
             
             <div className="card-grid">
-              {cards.map((card) => (
-                <button
-                  key={card}
-                  className={`planning-card h-20 flex items-center justify-center text-lg font-semibold ${
-                    game.isCardSelected(card) ? 'selected' : ''
-                  }`}
-                  onClick={() => game.selectCard(card)}
-                  disabled={game.loading || !currentRoom || (currentRoom.gameState !== 'selecting' && currentRoom.gameState !== 'revealed')}
-                >
-                  {card}
-                </button>
-              ))}
+              {cards.map((card) => {
+                const isSelected = game.isCardSelected(card);
+                const isDisabled = game.loading || !currentRoom || (currentRoom.gameState !== 'selecting' && currentRoom.gameState !== 'revealed');
+                
+                return (
+                  <button
+                    key={card}
+                    className={`planning-card group h-20 flex items-center justify-center ${
+                      isSelected ? 'selected' : ''
+                    } ${getCardSpecialClass(card)} ${
+                      game.loading && isSelected ? 'animate-pulse-soft' : ''
+                    }`}
+                    onClick={() => game.selectCard(card)}
+                    disabled={isDisabled}
+                    title={isDisabled ? 
+                      `현재 ${currentRoom?.gameState === 'revealed' ? '공개' : '선택'} 상태가 아닙니다` : 
+                      `${card} 포인트 선택`
+                    }
+                  >
+                    <span className="planning-card-content">
+                      {card}
+                    </span>
+                    {isSelected && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-primary-500 bg-opacity-20 rounded-xl">
+                        <div className="w-6 h-6 border-2 border-primary-600 rounded-full flex items-center justify-center">
+                          <div className="w-2 h-2 bg-primary-600 rounded-full"></div>
+                        </div>
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            
+            {/* 카드 선택 가이드 */}
+            <div className="mt-4 text-sm text-gray-500 text-center">
+              {currentRoom?.gameState === 'selecting' && (
+                <p>💡 원하는 스토리 포인트 카드를 선택하세요</p>
+              )}
+              {currentRoom?.gameState === 'revealed' && (
+                <p>🔄 공개된 후에도 카드를 변경할 수 있습니다</p>
+              )}
             </div>
           </div>
         </div>
@@ -72,68 +129,43 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
         {/* 참여자 목록 및 상태 */}
         <div className="space-y-6">
           {/* 참여자 목록 */}
-          <div className="bg-white rounded-xl p-6 shadow-lg">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              참여자 ({totalUsers}명)
-            </h3>
-            <div className="space-y-3">
-              {users.map((user) => (
-                <div key={user.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">{user.name}</span>
-                    {user.id === game.currentUser?.id && (
-                      <span className="text-xs bg-primary-100 text-primary-700 px-2 py-1 rounded">나</span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {user.selectedCard ? (
-                      <span className="text-green-600 text-sm">✅ 선택완료</span>
-                    ) : (
-                      <span className="text-gray-400 text-sm">⏳ 선택중</span>
-                    )}
-                    <span className={`user-status ${user.isConnected ? 'online' : 'offline'}`}>
-                      {user.isConnected ? '온라인' : '오프라인'}
-                    </span>
-                  </div>
-                </div>
-              ))}
-              {totalUsers === 0 && (
-                <div className="text-center text-gray-500 py-4">
-                  참여자가 없습니다
-                </div>
-              )}
-            </div>
-          </div>
+          <PlayerList 
+            users={users}
+            currentUserId={game.currentUser?.id}
+            gameState={currentRoom?.gameState || 'selecting'}
+          />
 
           {/* 게임 상태 */}
           <div className="bg-white rounded-xl p-6 shadow-lg">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               게임 상태
             </h3>
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div className="text-sm text-gray-600">
                 선택 완료: {selectedUsers}/{totalUsers}명
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
                 <div 
-                  className="bg-primary-600 h-2 rounded-full transition-all duration-300" 
+                  className="bg-gradient-to-r from-primary-500 to-primary-600 h-3 rounded-full transition-all duration-500 ease-out" 
                   style={{ width: `${selectedPercentage}%` }}
                 ></div>
               </div>
-              <button 
-                className="btn btn-success w-full" 
-                disabled={!game.canRevealCards || game.loading}
-                onClick={game.revealCards}
-              >
-                {game.loading ? '처리중...' : '카드 공개'}
-              </button>
-              <button 
-                className="btn btn-secondary w-full"
-                onClick={game.resetRound}
-                disabled={game.loading}
-              >
-                라운드 초기화
-              </button>
+              <div className="grid grid-cols-1 gap-2">
+                <button 
+                  className="btn btn-success w-full" 
+                  disabled={!game.canRevealCards || game.loading}
+                  onClick={game.revealCards}
+                >
+                  {game.loading ? '처리중...' : '카드 공개'}
+                </button>
+                <button 
+                  className="btn btn-secondary w-full"
+                  onClick={game.resetRound}
+                  disabled={game.loading}
+                >
+                  라운드 초기화
+                </button>
+              </div>
             </div>
           </div>
         </div>

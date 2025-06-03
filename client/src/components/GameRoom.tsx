@@ -1,6 +1,7 @@
 import type { PlanningPokerCard } from '../types';
 import type { useGame } from '../hooks/useGame';
 import PlayerList from './PlayerList';
+import GameResult from './GameResult';
 
 interface GameRoomProps {
   roomId: string
@@ -141,15 +142,60 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
               게임 상태
             </h3>
             <div className="space-y-4">
-              <div className="text-sm text-gray-600">
-                선택 완료: {selectedUsers}/{totalUsers}명
+              {/* 진행률 요약 */}
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-600">선택 완료:</span>
+                <span className="font-medium text-gray-900">
+                  {selectedUsers}/{totalUsers}명 
+                  <span className="text-primary-600 ml-1">
+                    ({selectedPercentage.toFixed(0)}%)
+                  </span>
+                </span>
               </div>
+              
+              {/* 진행률 바 */}
               <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
                 <div 
                   className="bg-gradient-to-r from-primary-500 to-primary-600 h-3 rounded-full transition-all duration-500 ease-out" 
                   style={{ width: `${selectedPercentage}%` }}
                 ></div>
               </div>
+
+              {/* 대기 중인 사용자 표시 */}
+              {currentRoom?.gameState === 'selecting' && selectedUsers < totalUsers && (
+                <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                  <div className="text-sm font-medium text-amber-800 mb-2">
+                    🕐 대기 중인 참여자 ({totalUsers - selectedUsers}명)
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {users
+                      .filter(user => !user.selectedCard)
+                      .map(user => (
+                        <span 
+                          key={user.id}
+                          className="inline-flex items-center px-2 py-1 text-xs font-medium bg-amber-100 text-amber-700 rounded-full"
+                        >
+                          {user.name}
+                        </span>
+                      ))
+                    }
+                  </div>
+                </div>
+              )}
+
+              {/* 모든 선택 완료 시 알림 */}
+              {currentRoom?.gameState === 'selecting' && selectedUsers === totalUsers && totalUsers > 0 && (
+                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="text-sm font-medium text-green-800 flex items-center gap-2">
+                    ✅ 모든 참여자가 카드를 선택했습니다!
+                  </div>
+                  <div className="text-xs text-green-600 mt-1">
+                    이제 카드를 공개할 수 있습니다.
+                  </div>
+                </div>
+              )}
+
+              {/* 액션 버튼들 */}
               <div className="grid grid-cols-1 gap-2">
                 <button 
                   className="btn btn-success w-full" 
@@ -173,38 +219,12 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
 
       {/* 게임 결과 표시 */}
       {game.gameResult && (
-        <div className="mt-8 bg-white rounded-xl p-6 shadow-lg">
-          <h3 className="text-xl font-semibold text-gray-900 mb-4">게임 결과</h3>
-          <div className="grid md:grid-cols-2 gap-6">
-            <div>
-              <h4 className="font-medium text-gray-700 mb-2">선택된 카드</h4>
-              <div className="space-y-2">
-                {users.map(user => (
-                  <div key={user.id} className="flex items-center justify-between">
-                    <span>{user.name}</span>
-                    <span className="font-mono bg-gray-100 px-2 py-1 rounded">
-                      {user.selectedCard || '-'}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div>
-              <h4 className="font-medium text-gray-700 mb-2">통계</h4>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span>평균값:</span>
-                  <span className="font-bold text-primary-600">
-                    {game.gameResult.average !== null ? game.gameResult.average.toFixed(1) : 'N/A'}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span>유효 투표:</span>
-                  <span>{game.gameResult.validVotes}/{game.gameResult.totalUsers}</span>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div className="mt-8">
+          <GameResult 
+            users={users}
+            gameResult={game.gameResult}
+            onNewRound={game.resetRound}
+          />
         </div>
       )}
 

@@ -341,7 +341,8 @@ export function useGame() {
   // 계산된 값들
   const canRevealCards = gameState.room && 
     gameState.room.gameState === 'selecting' &&
-    gameState.room.users.some(user => user.selectedCard);
+    gameState.room.users.length >= 1 && // 최소 1명 이상 참여
+    gameState.room.users.some(user => user.selectedCard); // 최소 1명 이상 카드 선택
 
   const allUsersSelected = gameState.room &&
     gameState.room.users.length > 0 &&
@@ -351,6 +352,12 @@ export function useGame() {
     gameState.room.users.filter(user => user.selectedCard).length : 0;
 
   const totalCount = gameState.room ? gameState.room.users.length : 0;
+
+  // 카드 공개 준비 상태 (모든 사용자가 선택 완료)
+  const isReadyToReveal = gameState.room &&
+    gameState.room.gameState === 'selecting' &&
+    gameState.room.users.length > 0 &&
+    gameState.room.users.every(user => user.selectedCard);
 
   return {
     // 상태
@@ -370,6 +377,7 @@ export function useGame() {
     allUsersSelected,
     selectedCount,
     totalCount,
+    isReadyToReveal,
     
     // 액션
     createRoom,

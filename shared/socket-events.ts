@@ -5,6 +5,7 @@ import {
   RevealCardsPayload,
   ResetRoundPayload,
   UpdateUserNamePayload,
+  UpdateRoomNamePayload,
   JoinRoomResponse,
   CreateRoomResponse,
   CardSelectionResponse,
@@ -38,6 +39,7 @@ export const SOCKET_EVENTS = {
   
   // 사용자 관련 (클라이언트 → 서버)
   UPDATE_USER_NAME: 'update_user_name',
+  UPDATE_ROOM_NAME: 'update_room_name',
   GET_USER_INFO: 'get_user_info',
   
   // 실시간 업데이트 (서버 → 클라이언트)
@@ -126,6 +128,10 @@ export interface ClientToServerEvents {
   // 사용자 관련
   [SOCKET_EVENTS.UPDATE_USER_NAME]: (
     data: UpdateUserNamePayload, 
+    callback: (response: ApiResponse) => void
+  ) => void;
+  [SOCKET_EVENTS.UPDATE_ROOM_NAME]: (
+    data: UpdateRoomNamePayload, 
     callback: (response: ApiResponse) => void
   ) => void;
   [SOCKET_EVENTS.GET_USER_INFO]: (

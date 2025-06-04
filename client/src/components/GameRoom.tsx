@@ -20,6 +20,10 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
   const [isEditingName, setIsEditingName] = useState(false);
   const [editingName, setEditingName] = useState('');
 
+  // 방 이름 편집 상태
+  const [isEditingRoomName, setIsEditingRoomName] = useState(false);
+  const [editingRoomName, setEditingRoomName] = useState('');
+
   // 플래닝 포커 카드 덱
   const cards: PlanningPokerCard[] = ['0', '1/2', '1', '2', '3', '5', '8', '13', '20', '40', '60', '100', '?', '커피'];
 
@@ -92,6 +96,48 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
     }
   };
 
+  // 방 이름 편집 시작
+  const startEditingRoomName = () => {
+    if (game.room) {
+      setEditingRoomName(game.room.name);
+      setIsEditingRoomName(true);
+    }
+  };
+
+  // 방 이름 편집 취소
+  const cancelEditingRoomName = () => {
+    setIsEditingRoomName(false);
+    setEditingRoomName('');
+  };
+
+  // 방 이름 변경 완료
+  const finishEditingRoomName = async () => {
+    if (!editingRoomName.trim()) {
+      cancelEditingRoomName();
+      return;
+    }
+
+    try {
+      await game.updateRoomName(editingRoomName.trim());
+      setIsEditingRoomName(false);
+      setEditingRoomName('');
+    } catch (error) {
+      console.error('방 이름 변경 실패:', error);
+      // 에러는 useGame에서 관리되므로 여기서는 편집 상태만 초기화
+      setIsEditingRoomName(false);
+      setEditingRoomName('');
+    }
+  };
+
+  // 방 이름 Enter/Escape 키 처리
+  const handleRoomNameKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      finishEditingRoomName();
+    } else if (e.key === 'Escape') {
+      cancelEditingRoomName();
+    }
+  };
+
   // 바둑판식 그리드 컬럼 수 계산
   const getGridColumns = (total: number) => {
     if (total <= 4) return 2;      // 2x2
@@ -108,7 +154,45 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
       <div className="bg-white rounded-xl p-3 shadow-lg mb-3">
         <div className="flex justify-between items-center gap-3">
           <div className="flex items-center gap-3 flex-1 min-w-0">
-            <h1 className="text-lg font-bold text-gray-900 truncate">{roomName}</h1>
+            {isEditingRoomName ? (
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={editingRoomName}
+                  onChange={(e) => setEditingRoomName(e.target.value)}
+                  onKeyDown={handleRoomNameKeyPress}
+                  onBlur={finishEditingRoomName}
+                  className="text-lg font-bold text-gray-900 bg-white border border-gray-300 rounded px-2 py-1 min-w-0 flex-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  maxLength={50}
+                  autoFocus
+                />
+                <button
+                  onClick={finishEditingRoomName}
+                  className="text-sm bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
+                  disabled={game.loading}
+                >
+                  ✓
+                </button>
+                <button
+                  onClick={cancelEditingRoomName}
+                  className="text-sm bg-gray-500 text-white px-2 py-1 rounded hover:bg-gray-600"
+                >
+                  ✕
+                </button>
+              </div>
+            ) : (
+              <div className="relative group flex items-center gap-2 flex-1 min-w-0">
+                <h1 className="text-lg font-bold text-gray-900 truncate">{currentRoom?.name || roomName}</h1>
+                <button
+                  onClick={startEditingRoomName}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-blue-500 flex-shrink-0"
+                  title="방 이름 편집"
+                  disabled={game.loading}
+                >
+                  ✏️
+                </button>
+              </div>
+            )}
             <span className="text-sm text-gray-600 whitespace-nowrap">
               선택: {selectedUsers}/{totalUsers}
             </span>
@@ -237,7 +321,7 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
                 disabled={!game.canRevealCards || game.loading}
                 onClick={game.revealCards}
               >
-                {game.loading ? '공개 중...' : '공개'}
+                {game.loading ? '카드 오픈 중...' : '카드 오픈'}
               </button>
             ) : (
               <button 

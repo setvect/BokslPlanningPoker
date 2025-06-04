@@ -256,6 +256,24 @@ export function useSocket(options: UseSocketOptions = {}) {
     });
   };
 
+  // 방 이름 변경
+  const updateRoomName = (newName: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      if (!socketRef.current?.connected) {
+        reject(new Error('Socket이 연결되지 않았습니다'));
+        return;
+      }
+
+      socketRef.current.emit(SOCKET_EVENTS.UPDATE_ROOM_NAME, { newName }, (response: ApiResponse) => {
+        if (response.success) {
+          resolve();
+        } else {
+          reject(new Error(response.error || '방 이름 변경 실패'));
+        }
+      });
+    });
+  };
+
   // 방 목록 조회
   const getRoomList = (): Promise<Room[]> => {
     return new Promise((resolve, reject) => {
@@ -346,6 +364,7 @@ export function useSocket(options: UseSocketOptions = {}) {
     
     // 사용자 관련 액션
     updateUserName,
+    updateRoomName,
     
     // 방 목록 조회
     getRoomList,

@@ -8,6 +8,7 @@ import {
   RevealCardsPayload,
   ResetRoundPayload,
   UpdateUserNamePayload,
+  UpdateRoomNamePayload,
   CreateRoomResponse,
   JoinRoomResponse,
   CardSelectionResponse,
@@ -231,6 +232,24 @@ class GameStore {
     room.lastActivity = new Date().toISOString();
     
     return { room, user };
+  }
+  
+  // 방 이름 변경
+  updateRoomName(socketId: string, newName: string): Room {
+    const roomId = this.userRoomMap.get(socketId);
+    if (!roomId) throw new Error(ERROR_MESSAGES[ERROR_CODES.USER_NOT_IN_ROOM]);
+    
+    const room = this.rooms.get(roomId);
+    if (!room) throw new Error(ERROR_MESSAGES[ERROR_CODES.ROOM_NOT_FOUND]);
+    
+    if (!Utils.validateRoomName(newName)) {
+      throw new Error(ERROR_MESSAGES[ERROR_CODES.INVALID_ROOM_NAME]);
+    }
+    
+    room.name = newName;
+    room.lastActivity = new Date().toISOString();
+    
+    return room;
   }
   
   // 방 정보 조회
@@ -569,6 +588,31 @@ export function setupSocketHandlers(io: Server) {
         console.log(`이름 변경: ${user.originalName} -> ${user.name}`);
       } catch (error) {
         console.error('이름 변경 실패:', error);
+        callback({
+          success: false,
+          error: (error as Error).message
+        });
+      }
+    });
+    
+    // 방 이름 변경
+    socket.on(SOCKET_EVENTS.UPDATE_ROOM_NAME, (data: UpdateRoomNamePayload, callback: (response: ApiResponse) => void) => {
+      try {
+        const room = gameStore.updateRoomName(socket.id, data.newName);
+        
+        callback({ success: true });
+        
+        const serializedRoom = gameStore.serializeRoom(room);
+        
+        // 방의 모든 사용자에게 방 이름 변경 알림
+        io.to(room.id).emit(SOCKET_EVENTS.ROOM_UPDATE, {
+          room: serializedRoom,
+          type: 'game_state_changed'
+        } as RoomUpdateEvent);
+        
+        console.log(`방 이름 변경: ${room.id} -> ${room.name}`);
+      } catch (error) {
+        console.error('방 이름 변경 실패:', error);
         callback({
           success: false,
           error: (error as Error).message

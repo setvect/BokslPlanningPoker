@@ -242,6 +242,31 @@ export function useGame() {
     }
   }, [gameState.currentUser, socket, setLoading, clearError]);
 
+  // 방 이름 변경
+  const updateRoomName = useCallback(async (newName: string) => {
+    if (!gameState.room) {
+      throw new Error('방에 참여하지 않았습니다');
+    }
+
+    try {
+      setLoading(true);
+      clearError();
+
+      await socket.updateRoomName(newName);
+      
+      console.log('방 이름 변경 성공:', newName);
+      setLoading(false);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '방 이름 변경에 실패했습니다';
+      setGameState(prev => ({
+        ...prev,
+        loading: false,
+        error: errorMessage
+      }));
+      throw error;
+    }
+  }, [gameState.room, socket, setLoading, clearError]);
+
   // Socket.io 이벤트 리스너 등록
   useEffect(() => {
     const unsubscribers: (() => void)[] = [];
@@ -412,6 +437,7 @@ export function useGame() {
     resetRound,
     leaveRoom,
     updateUserName,
+    updateRoomName,
     clearError,
     
     // 유틸리티

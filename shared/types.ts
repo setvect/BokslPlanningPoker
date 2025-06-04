@@ -99,6 +99,10 @@ export interface UpdateUserNamePayload {
   newName: string;
 }
 
+export interface UpdateRoomNamePayload {
+  newName: string;
+}
+
 // Socket.io 이벤트 응답 타입들
 export interface JoinRoomResponse {
   success: boolean;

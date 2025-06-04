@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useSocket } from '../hooks/useSocket'
+import AboutModal from './AboutModal'
 import type { Room } from '../../../shared/types'
 
 interface MainPageProps {
@@ -14,6 +15,7 @@ export default function MainPage({ onCreateRoom, onJoinRoom, error, onClearError
   const [roomList, setRoomList] = useState<Room[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const [showAbout, setShowAbout] = useState(false)
   const socket = useSocket()
 
   // 방 목록 로드
@@ -59,10 +61,21 @@ export default function MainPage({ onCreateRoom, onJoinRoom, error, onClearError
     <div className="min-h-screen flex items-start justify-center pt-20">
       <div className="max-w-4xl mx-auto text-center w-full px-4">
         {/* 헤더 */}
-        <div className="mb-12">
+        <div className="mb-12 relative">
           <h1 className="text-5xl font-bold text-gray-900 mb-4">
             🃏 복슬 플래닝 포커
           </h1>
+          
+          {/* 정보 버튼 */}
+          <button
+            onClick={() => setShowAbout(true)}
+            className="absolute top-0 right-0 text-gray-500 hover:text-gray-700 transition-colors p-2 rounded-full hover:bg-gray-100"
+            title="복슬 플래닝 포커 정보"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </button>
         </div>
 
         {/* 에러 메시지 */}
@@ -93,7 +106,7 @@ export default function MainPage({ onCreateRoom, onJoinRoom, error, onClearError
               새 방 만들기
             </h2>
             <p className="text-gray-600 mb-6">
-              새로운 플래닝 포커 세션을 시작하세요
+              플래닝 포커 방을 만들어보세요.
             </p>
             
             <form onSubmit={handleCreateRoom} className="space-y-4">
@@ -183,6 +196,12 @@ export default function MainPage({ onCreateRoom, onJoinRoom, error, onClearError
           </div>
         </div>
       </div>
+      
+      {/* 정보 모달 */}
+      <AboutModal 
+        isOpen={showAbout} 
+        onClose={() => setShowAbout(false)} 
+      />
     </div>
   )
 } 

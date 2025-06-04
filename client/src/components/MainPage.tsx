@@ -61,7 +61,7 @@ export default function MainPage({ onCreateRoom, onJoinRoom, error, onClearError
         {/* 헤더 */}
         <div className="mb-12">
           <h1 className="text-5xl font-bold text-gray-900 mb-4">
-            🃏 플래닝 포커
+            🃏 복슬 플래닝 포커
           </h1>
         </div>
 

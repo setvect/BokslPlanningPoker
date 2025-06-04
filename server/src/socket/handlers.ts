@@ -244,6 +244,22 @@ class GameStore {
     return roomId ? this.rooms.get(roomId) || null : null;
   }
   
+  // 활성 방 목록 조회 (사용자가 있는 방만)
+  getActiveRooms(): SharedRoom[] {
+    const activeRooms: SharedRoom[] = [];
+    
+    for (const room of this.rooms.values()) {
+      if (room.users.size > 0) {
+        activeRooms.push(this.serializeRoom(room));
+      }
+    }
+    
+    // 생성 시간 기준으로 정렬 (최신순)
+    return activeRooms.sort((a, b) => 
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  }
+  
   // 게임 결과 계산
   calculateGameResult(room: Room): GameResult {
     const users = Array.from(room.users.values());
@@ -585,6 +601,26 @@ export function setupSocketHandlers(io: Server) {
         callback({ success: true });
       } catch (error) {
         console.error('방 나가기 실패:', error);
+        callback({
+          success: false,
+          error: (error as Error).message
+        });
+      }
+    });
+    
+    // 방 목록 조회
+    socket.on(SOCKET_EVENTS.GET_ROOM_LIST, (callback: (response: ApiResponse<SharedRoom[]>) => void) => {
+      try {
+        const activeRooms = gameStore.getActiveRooms();
+        
+        callback({
+          success: true,
+          data: activeRooms
+        });
+        
+        console.log(`방 목록 조회: ${activeRooms.length}개 방 반환`);
+      } catch (error) {
+        console.error('방 목록 조회 실패:', error);
         callback({
           success: false,
           error: (error as Error).message

@@ -12,7 +12,8 @@ import type {
   RoomUpdateEvent,
   GameUpdateEvent,
   UserUpdateEvent,
-  ApiResponse
+  ApiResponse,
+  Room
 } from '../../../shared/types.ts';
 
 interface UseSocketOptions {
@@ -237,6 +238,42 @@ export function useSocket(options: UseSocketOptions = {}) {
     });
   };
 
+  // 사용자 이름 변경
+  const updateUserName = (newName: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      if (!socketRef.current?.connected) {
+        reject(new Error('Socket이 연결되지 않았습니다'));
+        return;
+      }
+
+      socketRef.current.emit(SOCKET_EVENTS.UPDATE_USER_NAME, { newName }, (response: ApiResponse) => {
+        if (response.success) {
+          resolve();
+        } else {
+          reject(new Error(response.error || '이름 변경 실패'));
+        }
+      });
+    });
+  };
+
+  // 방 목록 조회
+  const getRoomList = (): Promise<Room[]> => {
+    return new Promise((resolve, reject) => {
+      if (!socketRef.current?.connected) {
+        reject(new Error('Socket이 연결되지 않았습니다'));
+        return;
+      }
+
+      socketRef.current.emit(SOCKET_EVENTS.GET_ROOM_LIST, (response: ApiResponse<Room[]>) => {
+        if (response.success) {
+          resolve(response.data || []);
+        } else {
+          reject(new Error(response.error || '방 목록 조회 실패'));
+        }
+      });
+    });
+  };
+
   // 이벤트 리스너 등록
   const onRoomUpdate = (callback: (data: RoomUpdateEvent) => void) => {
     if (socketRef.current) {
@@ -306,6 +343,12 @@ export function useSocket(options: UseSocketOptions = {}) {
     selectCard,
     revealCards,
     resetRound,
+    
+    // 사용자 관련 액션
+    updateUserName,
+    
+    // 방 목록 조회
+    getRoomList,
     
     // 이벤트 리스너
     onRoomUpdate,

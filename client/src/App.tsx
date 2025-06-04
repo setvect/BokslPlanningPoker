@@ -119,10 +119,10 @@ function App() {
           updateUrl(roomId); // URL을 /room/{roomId}로 변경
           setAppState('game');
         })
-        .catch(() => {
-          // 실패 시 사용자 이름 입력으로 이동
-          setPendingRoomData({ roomId, roomName });
-          setAppState('join');
+        .catch((error) => {
+          console.error('방 참여 실패:', error.message);
+          // 방이 가득찼거나 존재하지 않으면 에러 표시 후 메인으로 유지
+          // 사용자 이름 입력으로 이동하지 않음
         });
     } else {
       // 사용자 이름 입력으로 이동
@@ -154,7 +154,7 @@ function App() {
       setAppState('game');
     } catch (error) {
       console.error('방 참여/생성 실패:', error);
-      // 에러는 useGame에서 관리됨
+      // 에러는 useGame에서 관리됨 (JoinRoom 컴포넌트에서 표시)
     }
   }, [game, pendingRoomData]);
 
@@ -230,6 +230,8 @@ function App() {
         <MainPage
           onCreateRoom={handleCreateRoom}
           onJoinRoom={handleJoinRoom}
+          error={game.error}
+          onClearError={game.clearError}
         />
       );
 
@@ -244,6 +246,8 @@ function App() {
           roomName={pendingRoomData.roomName}
           onBack={handleBack}
           onJoin={handleJoinWithUserName}
+          error={game.error}
+          loading={game.loading}
         />
       );
 

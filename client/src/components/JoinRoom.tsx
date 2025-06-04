@@ -5,14 +5,16 @@ interface JoinRoomProps {
   roomName: string
   onBack: () => void
   onJoin: (userName: string) => void
+  error?: string | null
+  loading?: boolean
 }
 
-export default function JoinRoom({ roomId, roomName, onBack, onJoin }: JoinRoomProps) {
+export default function JoinRoom({ roomId, roomName, onBack, onJoin, error, loading }: JoinRoomProps) {
   const [userName, setUserName] = useState('')
 
   const handleJoin = (e: React.FormEvent) => {
     e.preventDefault()
-    if (userName.trim()) {
+    if (userName.trim() && !loading) {
       onJoin(userName.trim())
     }
   }
@@ -41,6 +43,17 @@ export default function JoinRoom({ roomId, roomName, onBack, onJoin }: JoinRoomP
           </div>
         </div>
 
+        {/* 에러 메시지 */}
+        {error && (
+          <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-red-600">❌</span>
+              <span className="text-red-800 font-medium">방 참여 실패</span>
+            </div>
+            <p className="text-red-700 text-sm">{error}</p>
+          </div>
+        )}
+
         {/* 이름 입력 폼 */}
         <form onSubmit={handleJoin} className="space-y-6">
           <div>
@@ -57,6 +70,7 @@ export default function JoinRoom({ roomId, roomName, onBack, onJoin }: JoinRoomP
               maxLength={20}
               required
               autoFocus
+              disabled={loading}
             />
             <p className="text-xs text-gray-500 mt-1">
               다른 참여자들에게 표시될 이름입니다
@@ -68,15 +82,16 @@ export default function JoinRoom({ roomId, roomName, onBack, onJoin }: JoinRoomP
               type="button"
               onClick={onBack}
               className="btn btn-secondary flex-1"
+              disabled={loading}
             >
               뒤로가기
             </button>
             <button
               type="submit"
               className="btn btn-primary flex-1"
-              disabled={!userName.trim()}
+              disabled={!userName.trim() || loading}
             >
-              입장하기
+              {loading ? '입장 중...' : '입장하기'}
             </button>
           </div>
         </form>

@@ -15,6 +15,10 @@ interface GameRoomProps {
 export default function GameRoom({ roomId, roomName, userName, onLeave, game }: GameRoomProps) {
   // 카드 선택 모달 상태
   const [isCardModalOpen, setIsCardModalOpen] = useState(false);
+  
+  // 이름 편집 상태
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editingName, setEditingName] = useState('');
 
   // 플래닝 포커 카드 덱
   const cards: PlanningPokerCard[] = ['0', '1/2', '1', '2', '3', '5', '8', '13', '20', '40', '60', '100', '?', '커피'];
@@ -43,6 +47,48 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
         return 'planning-card-infinity';
       default:
         return '';
+    }
+  };
+
+  // 이름 편집 시작
+  const startEditingName = () => {
+    if (game.currentUser) {
+      setEditingName(game.currentUser.name);
+      setIsEditingName(true);
+    }
+  };
+
+  // 이름 편집 취소
+  const cancelEditingName = () => {
+    setIsEditingName(false);
+    setEditingName('');
+  };
+
+  // 이름 변경 완료
+  const finishEditingName = async () => {
+    if (!editingName.trim()) {
+      cancelEditingName();
+      return;
+    }
+
+    try {
+      await game.updateUserName(editingName.trim());
+      setIsEditingName(false);
+      setEditingName('');
+    } catch (error) {
+      console.error('이름 변경 실패:', error);
+      // 에러는 useGame에서 관리되므로 여기서는 편집 상태만 초기화
+      setIsEditingName(false);
+      setEditingName('');
+    }
+  };
+
+  // Enter/Escape 키 처리
+  const handleNameKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      finishEditingName();
+    } else if (e.key === 'Escape') {
+      cancelEditingName();
     }
   };
 
@@ -134,7 +180,49 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
                   
                   {/* 참여자 이름 */}
                   <div className={`player-name-large ${isCurrentUser ? 'current-user' : 'other-user'} mt-3`}>
-                    {user.name}
+                    {isCurrentUser && isEditingName ? (
+                      <div className="flex flex-col items-center gap-2">
+                        <input
+                          type="text"
+                          value={editingName}
+                          onChange={(e) => setEditingName(e.target.value)}
+                          onKeyDown={handleNameKeyPress}
+                          onBlur={finishEditingName}
+                          className="bg-white border border-gray-300 rounded px-2 py-1 text-sm text-center w-20 max-w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          maxLength={20}
+                          autoFocus
+                        />
+                        <div className="flex gap-1">
+                          <button
+                            onClick={finishEditingName}
+                            className="text-xs bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
+                            disabled={game.loading}
+                          >
+                            ✓
+                          </button>
+                          <button
+                            onClick={cancelEditingName}
+                            className="text-xs bg-gray-500 text-white px-2 py-1 rounded hover:bg-gray-600"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="relative group">
+                        <span>{user.name}</span>
+                        {isCurrentUser && (
+                          <button
+                            onClick={startEditingName}
+                            className="absolute -right-5 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-blue-500"
+                            title="이름 편집"
+                            disabled={game.loading}
+                          >
+                            ✏️
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               );

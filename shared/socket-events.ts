@@ -29,6 +29,7 @@ export const SOCKET_EVENTS = {
   JOIN_ROOM: 'join_room',
   LEAVE_ROOM: 'leave_room',
   GET_ROOM_INFO: 'get_room_info',
+  GET_ROOM_LIST: 'get_room_list',
   
   // 게임 관련 (클라이언트 → 서버)
   SELECT_CARD: 'select_card',
@@ -103,6 +104,9 @@ export interface ClientToServerEvents {
   [SOCKET_EVENTS.GET_ROOM_INFO]: (
     data: { roomId: string }, 
     callback: (response: ApiResponse<Room>) => void
+  ) => void;
+  [SOCKET_EVENTS.GET_ROOM_LIST]: (
+    callback: (response: ApiResponse<Room[]>) => void
   ) => void;
   
   // 게임 관련

@@ -1,5 +1,6 @@
 import React from 'react';
 import type { PlanningPokerCard } from '../types';
+import { FaCoffee } from 'react-icons/fa';
 
 interface CardSelectionModalProps {
   isOpen: boolean;
@@ -31,6 +32,14 @@ export default function CardSelectionModal({
       default:
         return '';
     }
+  };
+
+  // 카드 내용 렌더링 함수
+  const renderCardContent = (card: PlanningPokerCard) => {
+    if (card === '커피') {
+      return <FaCoffee className="text-amber-600 text-3xl" />;
+    }
+    return card;
   };
 
   if (!isOpen) return null;
@@ -79,7 +88,7 @@ export default function CardSelectionModal({
                   title={`${card} 포인트 선택`}
                 >
                   <span className="planning-card-content">
-                    {card}
+                    {renderCardContent(card)}
                   </span>
                   {isSelected && (
                     <div className="absolute inset-0 flex items-center justify-center bg-primary-500 bg-opacity-20 rounded-xl">
@@ -97,8 +106,14 @@ export default function CardSelectionModal({
         {/* 모달 푸터 */}
         <div className="sticky bottom-0 bg-gray-50 px-6 py-4 rounded-b-xl border-t border-gray-200">
           <div className="flex justify-between items-center">
-            <div className="text-sm text-gray-600">
-              {selectedCard ? `선택됨: ${selectedCard}` : '카드를 선택하세요'}
+            <div className="text-sm text-gray-600 flex items-center gap-1">
+              {selectedCard ? (
+                <>
+                  선택됨: {renderCardContent(selectedCard)}
+                </>
+              ) : (
+                '카드를 선택하세요'
+              )}
             </div>
             <button
               onClick={onClose}

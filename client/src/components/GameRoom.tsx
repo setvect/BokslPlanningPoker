@@ -3,6 +3,7 @@ import type { useGame } from '../hooks/useGame';
 import GameResult from './GameResult';
 import CardSelectionModal from './CardSelectionModal';
 import { useState } from 'react';
+import { FaCoffee } from 'react-icons/fa';
 
 interface GameRoomProps {
   roomId: string
@@ -52,6 +53,14 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
       default:
         return '';
     }
+  };
+
+  // 카드 내용 렌더링 함수
+  const renderCardContent = (card: PlanningPokerCard) => {
+    if (card === '커피') {
+      return <FaCoffee className="text-amber-600 text-3xl" />;
+    }
+    return card;
   };
 
   // 이름 편집 시작
@@ -242,7 +251,7 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
                       title={`${user.name}${user.selectedCard ? ` - ${user.selectedCard}` : ' - 카드 미선택'}`}
                     >
                       {currentRoom?.gameState === 'revealed' && user.selectedCard ? (
-                        user.selectedCard
+                        renderCardContent(user.selectedCard)
                       ) : user.selectedCard ? (
                         '🃏'
                       ) : (
@@ -382,7 +391,7 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
                         }
                       >
                         <span className="planning-card-content text-sm">
-                          {card}
+                          {renderCardContent(card)}
                         </span>
                         {isSelected && (
                           <div className="absolute inset-0 flex items-center justify-center bg-primary-500 bg-opacity-20 rounded-xl">

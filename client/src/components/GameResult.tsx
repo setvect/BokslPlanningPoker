@@ -15,33 +15,27 @@ export default function GameResult({ users, gameResult, onNewRound, className = 
   const participationRate = totalUsers > 0 ? (participatedUsers / totalUsers) * 100 : 0;
 
   return (
-    <div className={`${className}`}>
-      {/* 헤더 */}
-      <div className="flex items-center gap-2 mb-6">
-        <span className="text-xl">🎯</span>
-        <h3 className="text-xl font-semibold text-gray-900">게임 결과</h3>
-      </div>
-
-      {/* 평균값 및 참여율 */}
-      <div className="grid md:grid-cols-2 gap-6">
+    <div className={`${className} flex items-center justify-center h-full`}>
+      {/* 평균값 및 참여율 - 한 줄 배치 */}
+      <div className="flex gap-4 w-full max-w-md">
         {/* 평균 포인트 */}
-        <div className="text-center p-6 bg-blue-50 rounded-lg border border-blue-200">
-          <div className="text-sm text-blue-600 font-medium mb-2">평균 포인트</div>
-          <div className="text-4xl font-bold text-blue-700 mb-2">
+        <div className="flex-1 text-center p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="text-xs text-blue-600 font-medium mb-1">평균 포인트</div>
+          <div className="text-2xl font-bold text-blue-700 mb-1">
             {gameResult.average !== null ? gameResult.average.toFixed(1) : 'N/A'}
           </div>
-          <div className="text-sm text-blue-500">
-            {gameResult.average !== null ? `${participatedUsers}명의 숫자 투표 기준` : '숫자 투표 없음'}
+          <div className="text-xs text-blue-500">
+            {gameResult.average !== null ? `${participatedUsers}명 기준` : '숫자 투표 없음'}
           </div>
         </div>
 
         {/* 참여율 */}
-        <div className="text-center p-6 bg-green-50 rounded-lg border border-green-200">
-          <div className="text-sm text-green-600 font-medium mb-2">참여율</div>
-          <div className="text-4xl font-bold text-green-700 mb-2">
+        <div className="flex-1 text-center p-4 bg-green-50 rounded-lg border border-green-200">
+          <div className="text-xs text-green-600 font-medium mb-1">참여율</div>
+          <div className="text-2xl font-bold text-green-700 mb-1">
             {participationRate.toFixed(0)}%
           </div>
-          <div className="text-sm text-green-500">
+          <div className="text-xs text-green-500">
             {participatedUsers}/{totalUsers}명 참여
           </div>
         </div>

@@ -181,6 +181,29 @@
   .player-card.current-user {
     @apply ring-2 ring-primary-400 ring-offset-2;
   }
+
+  /* 큰 참여자 카드 (바둑판식 배열용) */
+  .player-card-large {
+    @apply w-20 h-24 rounded-xl border-2 flex items-center justify-center 
+           text-xl font-bold transition-all duration-300 transform hover:scale-105;
+  }
+  
+  .player-card-large.waiting {
+    @apply bg-gray-100 border-gray-300 text-gray-400 animate-pulse;
+  }
+  
+  .player-card-large.selected {
+    @apply bg-gradient-to-br from-blue-500 to-blue-600 border-blue-400 
+           text-white shadow-lg scale-105;
+  }
+  
+  .player-card-large.revealed {
+    @apply bg-white border-primary-500 text-primary-700 shadow-lg scale-105;
+  }
+  
+  .player-card-large.current-user {
+    @apply ring-2 ring-primary-400 ring-offset-2;
+  }
   
   /* 참여자 이름 배지 */
   .player-name {
@@ -192,6 +215,19 @@
   }
   
   .player-name.other-user {
+    @apply bg-gray-100 text-gray-700;
+  }
+
+  /* 큰 참여자 이름 배지 */
+  .player-name-large {
+    @apply mt-3 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200;
+  }
+  
+  .player-name-large.current-user {
+    @apply bg-primary-100 text-primary-700 border border-primary-300;
+  }
+  
+  .player-name-large.other-user {
     @apply bg-gray-100 text-gray-700;
   }
   
@@ -238,6 +274,14 @@
       @apply w-12 h-16 text-sm;
     }
     
+    .player-card-large {
+      @apply w-16 h-20 text-lg;
+    }
+    
+    .player-name-large {
+      @apply text-xs px-2 py-1;
+    }
+    
     .center-action-btn {
       @apply px-4 py-2 text-sm;
     }
@@ -247,6 +291,14 @@
   @media (min-width: 641px) and (max-width: 1024px) {
     .planning-card {
       @apply min-h-[6rem] w-14 text-base px-2 py-3;
+    }
+    
+    .player-card-large {
+      @apply w-20 h-24 text-lg;
+    }
+    
+    .player-name-large {
+      @apply text-sm px-2.5 py-1;
     }
   }
   
@@ -262,6 +314,14 @@
     
     .player-card {
       @apply w-20 h-24 text-xl;
+    }
+    
+    .player-card-large {
+      @apply w-24 h-28 text-2xl;
+    }
+    
+    .player-name-large {
+      @apply text-base px-4 py-2;
     }
     
     .center-action-btn {

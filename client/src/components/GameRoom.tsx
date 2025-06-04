@@ -1,6 +1,8 @@
 import type { PlanningPokerCard } from '../types';
 import type { useGame } from '../hooks/useGame';
 import GameResult from './GameResult';
+import CardSelectionModal from './CardSelectionModal';
+import { useState } from 'react';
 
 interface GameRoomProps {
   roomId: string
@@ -11,6 +13,9 @@ interface GameRoomProps {
 }
 
 export default function GameRoom({ roomId, roomName, userName, onLeave, game }: GameRoomProps) {
+  // 카드 선택 모달 상태
+  const [isCardModalOpen, setIsCardModalOpen] = useState(false);
+
   // 플래닝 포커 카드 덱
   const cards: PlanningPokerCard[] = ['0', '1/2', '1', '2', '3', '5', '8', '13', '20', '40', '60', '100', '?', '커피'];
 
@@ -41,60 +46,15 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
     }
   };
 
-  // 직사각형 테이블 참여자 위치 계산
-  const getPlayerPosition = (index: number, total: number) => {
-    const tableWidth = 200;
-    const tableHeight = 120;
-    const margin = 40; // 테이블에서 카드까지의 거리
-    
-    // 직사각형 둘레를 따라 균등 배치
-    const perimeter = (tableWidth + tableHeight) * 2;
-    const segmentLength = perimeter / total;
-    const currentPosition = segmentLength * index;
-    
-    let x = 0, y = 0;
-    
-    if (currentPosition <= tableWidth) {
-      // 상단
-      x = currentPosition - tableWidth / 2;
-      y = -(tableHeight / 2 + margin);
-    } else if (currentPosition <= tableWidth + tableHeight) {
-      // 우측
-      x = tableWidth / 2 + margin;
-      y = (currentPosition - tableWidth) - tableHeight / 2;
-    } else if (currentPosition <= tableWidth * 2 + tableHeight) {
-      // 하단
-      x = (tableWidth * 2 + tableHeight - currentPosition) - tableWidth / 2;
-      y = tableHeight / 2 + margin;
-    } else {
-      // 좌측
-      x = -(tableWidth / 2 + margin);
-      y = (tableWidth * 2 + tableHeight * 2 - currentPosition) - tableHeight / 2;
-    }
-    
-    return { x, y };
+  // 바둑판식 그리드 컬럼 수 계산
+  const getGridColumns = (total: number) => {
+    if (total <= 4) return 2;      // 2x2
+    if (total <= 9) return 3;      // 3x3
+    if (total <= 12) return 4;     // 4x3 (12명까지)
+    return 5;                      // 5열 (13명부터)
   };
 
-  // 참여자 수에 따른 동적 스타일 계산
-  const getContainerSize = () => {
-    return {
-      width: Math.max(320, 280 + totalUsers * 5),
-      height: Math.max(240, 200 + totalUsers * 3)
-    };
-  };
-
-  const containerSize = getContainerSize();
-
-  // 참여자 카드 크기 동적 조정 - 전체적으로 더 작게
-  const getPlayerCardClass = (baseClass: string) => {
-    if (totalUsers <= 4) {
-      return `${baseClass} scale-75`; // 기본 크기도 축소
-    } else if (totalUsers <= 8) {
-      return `${baseClass} scale-65`; // 더 작게
-    } else {
-      return `${baseClass} scale-55`; // 훨씬 더 작게
-    }
-  };
+  const gridColumns = getGridColumns(totalUsers);
 
   return (
     <div className="max-w-6xl mx-auto min-h-screen flex flex-col">
@@ -118,47 +78,20 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
 
       {/* 메인 게임 영역 - 여백 최적화 */}
       <div className="flex-1 flex flex-col">
-        {/* 직사각형 테이블 + 참여자 영역 - 여백 축소 */}
-        <div className="flex-1 flex items-center justify-center mb-3">
-          {/* 참여자 컨테이너 - 직사각형 기반 */}
-          <div className="relative" style={{ 
-            width: `${containerSize.width}px`,
-            height: `${containerSize.height}px`
-          }}>
-            
-            {/* 중앙 직사각형 테이블 */}
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-              <div className="bg-gradient-to-br from-emerald-50 to-blue-50 border-4 border-emerald-200 shadow-lg rounded-xl w-50 h-30" style={{width: '200px', height: '120px'}}>
-                {/* 테이블 중앙 액션 버튼 */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  {currentRoom?.gameState === 'selecting' ? (
-                    <button 
-                      className={`px-3 py-1.5 text-sm font-semibold bg-success-600 text-white rounded-lg shadow-md hover:bg-success-700 transition-colors ${!game.canRevealCards || game.loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      disabled={!game.canRevealCards || game.loading}
-                      onClick={game.revealCards}
-                    >
-                      {game.loading ? '공개 중...' : 'Reveal'}
-                    </button>
-                  ) : (
-                    <button 
-                      className={`px-3 py-1.5 text-sm font-semibold bg-gray-600 text-white rounded-lg shadow-md hover:bg-gray-700 transition-colors ${game.loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      onClick={game.resetRound}
-                      disabled={game.loading}
-                    >
-                      {game.loading ? '초기화 중...' : 'New Round'}
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* 참여자들을 테이블 둘레에 배치 */}
+        {/* 바둑판식 참여자 카드 영역 */}
+        <div className="flex-1 flex flex-col items-center justify-center mb-3 p-4">
+          {/* 참여자 카드 그리드 */}
+          <div 
+            className="grid gap-6 mb-6 w-full max-w-4xl"
+            style={{ 
+              gridTemplateColumns: `repeat(${gridColumns}, 1fr)`
+            }}
+          >
             {users.map((user, index) => {
-              const position = getPlayerPosition(index, totalUsers);
               const isCurrentUser = user.id === game.currentUser?.id;
               
               // 카드 상태에 따른 클래스 결정
-              let cardClass = 'player-card';
+              let cardClass = 'player-card-large';
               if (currentRoom?.gameState === 'revealed' && user.selectedCard) {
                 cardClass += ' revealed';
               } else if (user.selectedCard) {
@@ -171,22 +104,11 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
                 cardClass += ' current-user';
               }
               
-              // 참여자 수에 따른 크기 조정 적용
-              const finalCardClass = getPlayerCardClass(cardClass);
-              
               return (
-                <div
-                  key={user.id}
-                  className="absolute transform -translate-x-1/2 -translate-y-1/2"
-                  style={{
-                    left: `calc(50% + ${position.x}px)`,
-                    top: `calc(50% + ${position.y}px)`,
-                  }}
-                >
-                  {/* 참여자 카드 */}
-                  <div className="flex flex-col items-center">
+                <div key={user.id} className="flex flex-col items-center">
+                  <div className="relative">
                     <div 
-                      className={finalCardClass}
+                      className={cardClass}
                       title={`${user.name}${user.selectedCard ? ` - ${user.selectedCard}` : ' - 카드 미선택'}`}
                     >
                       {currentRoom?.gameState === 'revealed' && user.selectedCard ? (
@@ -198,23 +120,63 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
                       )}
                     </div>
                     
-                    {/* 참여자 이름 */}
-                    <div className={`player-name ${isCurrentUser ? 'current-user' : 'other-user'} ${
-                      totalUsers > 8 ? 'text-xs' : ''
-                    }`}>
-                      {user.name}
-                    </div>
+                    {/* 수정 아이콘 (본인 카드만, 결과 공개 후에만) */}
+                    {isCurrentUser && currentRoom?.gameState === 'revealed' && (
+                      <button
+                        onClick={() => setIsCardModalOpen(true)}
+                        className="absolute -top-2 -right-2 bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-blue-600 transition-colors shadow-md"
+                        title="카드 선택/수정"
+                      >
+                        ✏️
+                      </button>
+                    )}
+                  </div>
+                  
+                  {/* 참여자 이름 */}
+                  <div className={`player-name-large ${isCurrentUser ? 'current-user' : 'other-user'} mt-3`}>
+                    {user.name}
                   </div>
                 </div>
               );
             })}
           </div>
+
+          {/* 중앙 액션 버튼 */}
+          <div className="mb-4">
+            {currentRoom?.gameState === 'selecting' ? (
+              <button 
+                className={`px-6 py-3 text-base font-semibold bg-success-600 text-white rounded-lg shadow-md hover:bg-success-700 transition-colors ${!game.canRevealCards || game.loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={!game.canRevealCards || game.loading}
+                onClick={game.revealCards}
+              >
+                {game.loading ? '공개 중...' : '공개'}
+              </button>
+            ) : (
+              <button 
+                className={`px-6 py-3 text-base font-semibold bg-gray-600 text-white rounded-lg shadow-md hover:bg-gray-700 transition-colors ${game.loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                onClick={game.resetRound}
+                disabled={game.loading}
+              >
+                {game.loading ? '초기화 중...' : '새 라운드'}
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* 하단 영역: 카드 덱 (선택 중) 또는 게임 결과 (공개 후) - 패딩 최적화 */}
-        <div className="bg-white rounded-xl p-4 shadow-lg">
-          {currentRoom?.gameState === 'selecting' || currentRoom?.gameState === 'revealed' ? (
-            <>
+        {/* 하단 영역: 게임 결과 (공개 후) - 패딩 최적화 */}
+        <div className="bg-white rounded-xl p-4 shadow-lg min-h-[280px] flex flex-col">
+          {/* 게임 결과 우선 표시 (공개 후) */}
+          {game.gameResult && currentRoom?.gameState === 'revealed' ? (
+            <div className="flex-1 flex flex-col justify-center">
+              <GameResult 
+                users={users}
+                gameResult={game.gameResult}
+                onNewRound={game.resetRound}
+              />
+            </div>
+          ) : (
+            /* 카드 선택 영역 (선택 중 또는 기본) */
+            <div className="flex-1 flex flex-col">
               {/* 카드 선택 덱 - 여백 최소화 */}
               <div className="text-center mb-2">
                 <h3 className="text-base font-semibold text-gray-900 mb-0.5">
@@ -226,8 +188,8 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
               </div>
               
               {/* 가로 스크롤 카드 컨테이너 - 여백 최소화 */}
-              <div className="overflow-x-auto pb-1">
-                <div className="flex gap-2 min-w-max px-1">
+              <div className="overflow-x-auto pb-1 flex-1 flex flex-col justify-center">
+                <div className="flex gap-2 min-w-max px-1 justify-center">
                   {cards.map((card) => {
                     const isSelected = game.isCardSelected(card);
                     const isDisabled = game.loading || !currentRoom;
@@ -267,21 +229,19 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
                   <p className="text-xs text-gray-400">← 좌우로 스크롤하여 모든 카드 확인 →</p>
                 </div>
               </div>
-            </>
-          ) : null}
-
-          {/* 게임 결과 (공개 후) - 여백 최적화 */}
-          {game.gameResult && currentRoom?.gameState === 'revealed' && (
-            <div className="mt-4 pt-3 border-t border-gray-200">
-              <GameResult 
-                users={users}
-                gameResult={game.gameResult}
-                onNewRound={game.resetRound}
-              />
             </div>
           )}
         </div>
       </div>
+
+      {/* 카드 선택 모달 */}
+      <CardSelectionModal
+        isOpen={isCardModalOpen}
+        onClose={() => setIsCardModalOpen(false)}
+        selectedCard={game.currentUser?.selectedCard || null}
+        onSelectCard={game.selectCard}
+        loading={game.loading}
+      />
 
       {/* 에러 표시 - 여백 최적화 */}
       {game.error && (

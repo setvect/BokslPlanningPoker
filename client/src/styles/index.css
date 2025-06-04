@@ -19,12 +19,13 @@
 @layer components {
   /* 카드 컴포넌트 스타일 */
   .planning-card {
-    @apply relative bg-white border-2 border-gray-200 rounded-xl p-4 
+    @apply relative bg-white border-2 border-gray-200 rounded-xl 
            text-center cursor-pointer transition-all duration-300 
            hover:border-primary-400 hover:shadow-lg hover:shadow-primary-100
            hover:-translate-y-1 active:scale-95 active:translate-y-0
            focus:outline-none focus:ring-4 focus:ring-primary-200 focus:ring-opacity-50
-           overflow-hidden;
+           overflow-hidden flex items-center justify-center
+           w-14 min-h-[6rem] px-2 py-3;
   }
   
   .planning-card::before {
@@ -63,7 +64,7 @@
   
   /* 카드 내용 스타일 */
   .planning-card-content {
-    @apply relative z-10 font-bold text-lg sm:text-xl transition-transform duration-300
+    @apply relative z-10 font-bold text-base transition-transform duration-300
            group-hover:scale-110;
   }
   
@@ -151,36 +152,120 @@
   .game-state-revealed {
     @apply bg-green-100 text-green-800;
   }
+
+  /* 원형 테이블 스타일 */
+  .circular-table {
+    @apply relative rounded-full bg-gradient-to-br from-emerald-50 to-blue-50 
+           border-4 border-emerald-200 shadow-lg;
+  }
+  
+  /* 참여자 카드 (원형 테이블 위) */
+  .player-card {
+    @apply w-16 h-20 rounded-lg border-2 flex items-center justify-center 
+           text-lg font-bold transition-all duration-300 transform;
+  }
+  
+  .player-card.waiting {
+    @apply bg-gray-100 border-gray-300 text-gray-400 animate-pulse;
+  }
+  
+  .player-card.selected {
+    @apply bg-gradient-to-br from-blue-500 to-blue-600 border-blue-400 
+           text-white shadow-lg scale-105;
+  }
+  
+  .player-card.revealed {
+    @apply bg-white border-primary-500 text-primary-700 shadow-lg scale-105;
+  }
+  
+  .player-card.current-user {
+    @apply ring-2 ring-primary-400 ring-offset-2;
+  }
+  
+  /* 참여자 이름 배지 */
+  .player-name {
+    @apply mt-2 px-2 py-1 rounded-full text-xs font-medium transition-all duration-200;
+  }
+  
+  .player-name.current-user {
+    @apply bg-primary-100 text-primary-700 border border-primary-300;
+  }
+  
+  .player-name.other-user {
+    @apply bg-gray-100 text-gray-700;
+  }
+  
+  /* 중앙 액션 버튼 */
+  .center-action-btn {
+    @apply px-6 py-3 text-base font-semibold shadow-lg transform 
+           hover:scale-105 transition-transform duration-200
+           focus:outline-none focus:ring-4 focus:ring-offset-2;
+  }
+  
+  .center-action-btn.reveal {
+    @apply bg-success-600 text-white hover:bg-success-700 
+           focus:ring-success-500;
+  }
+  
+  .center-action-btn.new-round {
+    @apply bg-gray-600 text-white hover:bg-gray-700 
+           focus:ring-gray-500;
+  }
 }
 
 @layer utilities {
-  /* 반응형 그리드 */
+  /* 반응형 그리드 - 한 줄 배치로 변경 */
   .card-grid {
-    @apply grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7;
+    @apply flex gap-2 justify-center flex-wrap;
+    max-width: 100%;
   }
   
   /* 모바일 터치 최적화 */
   @media (max-width: 640px) {
     .planning-card {
-      @apply min-h-[4rem] text-base;
+      @apply min-h-[5rem] w-12 text-sm px-1 py-2;
     }
     
     .card-grid {
-      @apply gap-2;
+      @apply gap-1.5;
+    }
+    
+    .circular-table {
+      @apply w-80 h-80;
+    }
+    
+    .player-card {
+      @apply w-12 h-16 text-sm;
+    }
+    
+    .center-action-btn {
+      @apply px-4 py-2 text-sm;
     }
   }
   
   /* 태블릿 최적화 */
   @media (min-width: 641px) and (max-width: 1024px) {
     .planning-card {
-      @apply min-h-[5rem];
+      @apply min-h-[6rem] w-14 text-base px-2 py-3;
     }
   }
   
   /* 데스크톱 최적화 */
   @media (min-width: 1025px) {
     .planning-card {
-      @apply min-h-[5.5rem];
+      @apply min-h-[7rem] w-16 text-lg px-2 py-3;
+    }
+    
+    .circular-table {
+      @apply w-[28rem] h-[28rem];
+    }
+    
+    .player-card {
+      @apply w-20 h-24 text-xl;
+    }
+    
+    .center-action-btn {
+      @apply px-8 py-4 text-lg;
     }
   }
   

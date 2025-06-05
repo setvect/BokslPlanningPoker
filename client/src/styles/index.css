@@ -8,7 +8,7 @@
   }
   
   body {
-    @apply bg-gray-50 text-gray-900 antialiased;
+    @apply bg-gray-50 dark:bg-dark-900 text-gray-900 dark:text-gray-100 antialiased;
   }
   
   * {
@@ -19,17 +19,17 @@
 @layer components {
   /* 카드 컴포넌트 스타일 */
   .planning-card {
-    @apply relative bg-white border-2 border-gray-200 rounded-xl 
+    @apply relative bg-white dark:bg-dark-800 border-2 border-gray-200 dark:border-dark-600 rounded-xl 
            text-center cursor-pointer transition-all duration-300 
-           hover:border-primary-400 hover:shadow-lg hover:shadow-primary-100
+           hover:border-primary-400 dark:hover:border-primary-500 hover:shadow-lg hover:shadow-primary-100 dark:hover:shadow-primary-900/50
            hover:-translate-y-1 active:scale-95 active:translate-y-0
-           focus:outline-none focus:ring-4 focus:ring-primary-200 focus:ring-opacity-50
+           focus:outline-none focus:ring-4 focus:ring-primary-200 dark:focus:ring-primary-400 focus:ring-opacity-50
            overflow-hidden flex items-center justify-center
            w-14 min-h-[6rem] px-2 py-3;
   }
   
   .planning-card::before {
-    @apply absolute inset-0 bg-gradient-to-br from-primary-50 to-transparent 
+    @apply absolute inset-0 bg-gradient-to-br from-primary-50 dark:from-primary-900/30 to-transparent 
            opacity-0 transition-opacity duration-300;
     content: '';
   }
@@ -39,8 +39,8 @@
   }
   
   .planning-card.selected {
-    @apply border-primary-500 bg-gradient-to-br from-primary-50 to-primary-100 
-           text-primary-700 shadow-lg shadow-primary-200 transform scale-105;
+    @apply border-primary-500 bg-gradient-to-br from-primary-50 to-primary-100 dark:from-primary-900/50 dark:to-primary-800/50
+           text-primary-700 dark:text-primary-300 shadow-lg shadow-primary-200 dark:shadow-primary-900/50 transform scale-105;
   }
   
   .planning-card.selected::after {
@@ -49,13 +49,13 @@
   }
   
   .planning-card.revealed {
-    @apply border-success-400 bg-gradient-to-br from-success-50 to-success-100
-           shadow-lg shadow-success-200;
+    @apply border-success-400 dark:border-success-500 bg-gradient-to-br from-success-50 to-success-100 dark:from-success-900/50 dark:to-success-800/50
+           shadow-lg shadow-success-200 dark:shadow-success-900/50;
   }
   
   .planning-card:disabled {
     @apply cursor-not-allowed opacity-50 hover:transform-none hover:shadow-none
-           hover:border-gray-200 hover:bg-white;
+           hover:border-gray-200 dark:hover:border-dark-600 hover:bg-white dark:hover:bg-dark-800;
   }
   
   .planning-card:disabled::before {
@@ -70,15 +70,15 @@
   
   /* 카드 특수 효과 */
   .planning-card-infinity {
-    @apply text-purple-600;
+    @apply text-purple-600 dark:text-purple-400;
   }
   
   .planning-card-coffee {
-    @apply text-amber-600;
+    @apply text-amber-600 dark:text-amber-400;
   }
   
   .planning-card-question {
-    @apply text-indigo-600;
+    @apply text-indigo-600 dark:text-indigo-400;
   }
 
   /* 버튼 스타일 */
@@ -88,39 +88,41 @@
   }
   
   .btn-primary {
-    @apply bg-primary-600 text-white hover:bg-primary-700 
-           focus:ring-primary-500 disabled:bg-gray-400;
+    @apply bg-primary-600 dark:bg-primary-700 text-white hover:bg-primary-700 dark:hover:bg-primary-600
+           focus:ring-primary-500 disabled:bg-gray-400 dark:disabled:bg-gray-600;
   }
   
   .btn-secondary {
-    @apply bg-gray-200 text-gray-800 hover:bg-gray-300 
-           focus:ring-gray-500;
+    @apply bg-gray-200 dark:bg-dark-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-dark-600
+           focus:ring-gray-500 dark:focus:ring-gray-400;
   }
   
   .btn-success {
-    @apply bg-success-600 text-white hover:bg-success-700 
+    @apply bg-success-600 dark:bg-success-700 text-white hover:bg-success-700 dark:hover:bg-success-600
            focus:ring-success-500;
   }
   
   .btn-warning {
-    @apply bg-warning-600 text-white hover:bg-warning-700 
+    @apply bg-warning-600 dark:bg-warning-700 text-white hover:bg-warning-700 dark:hover:bg-warning-600
            focus:ring-warning-500;
   }
   
   /* 입력 필드 스타일 */
   .input {
-    @apply block w-full px-3 py-2 border border-gray-300 rounded-lg
-           focus:outline-none focus:ring-2 focus:ring-primary-500 
-           focus:border-primary-500 disabled:bg-gray-100;
+    @apply block w-full px-3 py-2 border border-gray-300 dark:border-dark-600 rounded-lg
+           bg-white dark:bg-dark-800 text-gray-900 dark:text-gray-100
+           focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400
+           focus:border-primary-500 dark:focus:border-primary-400 disabled:bg-gray-100 dark:disabled:bg-dark-700;
   }
   
   /* 모달 스타일 */
   .modal-overlay {
-    @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50;
+    @apply fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50;
   }
   
   .modal-content {
-    @apply bg-white rounded-lg p-6 max-w-md w-full mx-4 animate-slide-up;
+    @apply bg-white dark:bg-dark-800 rounded-lg p-6 max-w-md w-full mx-4 animate-slide-up
+           border border-gray-200 dark:border-dark-600;
   }
   
   /* 사용자 상태 표시 */
@@ -129,15 +131,15 @@
   }
   
   .user-status.online {
-    @apply bg-success-100 text-success-800;
+    @apply bg-success-100 dark:bg-success-900/30 text-success-800 dark:text-success-300;
   }
   
   .user-status.offline {
-    @apply bg-gray-100 text-gray-600;
+    @apply bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400;
   }
   
   .user-status.voted {
-    @apply bg-primary-100 text-primary-800;
+    @apply bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300;
   }
   
   /* 게임 상태 표시 */
@@ -146,17 +148,17 @@
   }
   
   .game-state-selecting {
-    @apply bg-blue-100 text-blue-800;
+    @apply bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300;
   }
   
   .game-state-revealed {
-    @apply bg-green-100 text-green-800;
+    @apply bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300;
   }
 
   /* 원형 테이블 스타일 */
   .circular-table {
-    @apply relative rounded-full bg-gradient-to-br from-emerald-50 to-blue-50 
-           border-4 border-emerald-200 shadow-lg;
+    @apply relative rounded-full bg-gradient-to-br from-emerald-50 to-blue-50 dark:from-emerald-900/30 dark:to-blue-900/30
+           border-4 border-emerald-200 dark:border-emerald-700 shadow-lg;
   }
   
   /* 참여자 카드 (원형 테이블 위) */
@@ -166,20 +168,20 @@
   }
   
   .player-card.waiting {
-    @apply bg-gray-100 border-gray-300 text-gray-400 animate-pulse;
+    @apply bg-gray-100 dark:bg-dark-700 border-gray-300 dark:border-dark-600 text-gray-400 dark:text-gray-500 animate-pulse;
   }
   
   .player-card.selected {
-    @apply bg-gradient-to-br from-blue-500 to-blue-600 border-blue-400 
+    @apply bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 border-blue-400 dark:border-blue-500
            text-white shadow-lg scale-105;
   }
   
   .player-card.revealed {
-    @apply bg-white border-primary-500 text-primary-700 shadow-lg scale-105;
+    @apply bg-white dark:bg-dark-800 border-primary-500 dark:border-primary-400 text-primary-700 dark:text-primary-300 shadow-lg scale-105;
   }
   
   .player-card.current-user {
-    @apply ring-2 ring-primary-400 ring-offset-2;
+    @apply ring-2 ring-primary-400 dark:ring-primary-500 ring-offset-2 dark:ring-offset-dark-900;
   }
 
   /* 큰 참여자 카드 (바둑판식 배열용) */
@@ -189,89 +191,87 @@
   }
   
   .player-card-large.waiting {
-    @apply bg-gray-100 border-gray-300 text-gray-400 animate-pulse;
+    @apply bg-gray-100 dark:bg-dark-700 border-gray-300 dark:border-dark-600 text-gray-400 dark:text-gray-500 animate-pulse;
   }
   
   .player-card-large.selected {
-    @apply bg-gradient-to-br from-blue-500 to-blue-600 border-blue-400 
+    @apply bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 border-blue-400 dark:border-blue-500
            text-white shadow-lg scale-105;
   }
   
   .player-card-large.revealed {
-    @apply bg-white border-primary-500 text-primary-700 shadow-lg scale-105;
+    @apply bg-white dark:bg-dark-800 border-primary-500 dark:border-primary-400 text-primary-700 dark:text-primary-300 shadow-lg scale-105;
   }
   
   .player-card-large.current-user {
-    @apply ring-2 ring-primary-400 ring-offset-2;
+    @apply ring-2 ring-primary-400 dark:ring-primary-500 ring-offset-2 dark:ring-offset-dark-900;
   }
   
-  /* 참여자 이름 배지 */
+  /* 플레이어 이름 스타일 */
   .player-name {
-    @apply mt-2 px-2 py-1 rounded-full text-xs font-medium transition-all duration-200;
+    @apply text-xs font-medium mt-1 text-center truncate;
   }
   
   .player-name.current-user {
-    @apply bg-primary-100 text-primary-700 border border-primary-300;
+    @apply text-primary-600 dark:text-primary-400 font-bold;
   }
   
   .player-name.other-user {
-    @apply bg-gray-100 text-gray-700;
+    @apply text-gray-600 dark:text-gray-400;
   }
-
-  /* 큰 참여자 이름 배지 */
+  
+  /* 큰 플레이어 이름 */
   .player-name-large {
-    @apply mt-3 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200;
+    @apply text-sm font-medium mt-2 text-center truncate;
   }
   
   .player-name-large.current-user {
-    @apply bg-primary-100 text-primary-700 border border-primary-300;
+    @apply text-primary-600 dark:text-primary-400 font-bold;
   }
   
   .player-name-large.other-user {
-    @apply bg-gray-100 text-gray-700;
+    @apply text-gray-600 dark:text-gray-400;
   }
   
   /* 중앙 액션 버튼 */
   .center-action-btn {
-    @apply px-6 py-3 text-base font-semibold shadow-lg transform 
-           hover:scale-105 transition-transform duration-200
-           focus:outline-none focus:ring-4 focus:ring-offset-2;
+    @apply absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2
+           px-6 py-3 rounded-full font-bold text-lg shadow-lg transition-all duration-300
+           hover:scale-105 active:scale-95 focus:outline-none focus:ring-4;
   }
   
   .center-action-btn.reveal {
-    @apply bg-success-600 text-white hover:bg-success-700 
-           focus:ring-success-500;
+    @apply bg-success-600 dark:bg-success-700 text-white hover:bg-success-700 dark:hover:bg-success-600
+           focus:ring-success-300 dark:focus:ring-success-500;
   }
   
   .center-action-btn.new-round {
-    @apply bg-gray-600 text-white hover:bg-gray-700 
-           focus:ring-gray-500;
+    @apply bg-primary-600 dark:bg-primary-700 text-white hover:bg-primary-700 dark:hover:bg-primary-600
+           focus:ring-primary-300 dark:focus:ring-primary-500;
   }
-}
 
-@layer utilities {
-  /* 반응형 그리드 - 한 줄 배치로 변경 */
+  /* 카드 그리드 */
   .card-grid {
-    @apply flex gap-2 justify-center flex-wrap;
-    max-width: 100%;
+    @apply grid grid-cols-7 gap-3 justify-items-center items-center
+           sm:grid-cols-7 md:grid-cols-7 lg:grid-cols-7;
   }
-  
-  /* 모바일 터치 최적화 */
+
+  /* 반응형 스타일 */
   @media (max-width: 640px) {
     .planning-card {
-      @apply min-h-[5rem] w-12 text-sm px-1 py-2;
+      @apply w-12 min-h-[5rem] px-1 py-2 text-sm;
     }
     
     .card-grid {
-      @apply gap-1.5;
+      @apply grid-cols-4 gap-2;
     }
     
     .circular-table {
-      @apply w-80 h-80;
+      @apply border-2;
     }
     
     .player-card {
-      @apply w-12 h-16 text-sm;
+      @apply w-12 h-16 text-base;
     }
     
     .player-card-large {
@@ -279,37 +279,35 @@
     }
     
     .player-name-large {
-      @apply text-xs px-2 py-1;
+      @apply text-xs mt-1;
     }
     
     .center-action-btn {
-      @apply px-4 py-2 text-sm;
+      @apply px-4 py-2 text-base;
     }
   }
-  
-  /* 태블릿 최적화 */
+
   @media (min-width: 641px) and (max-width: 1024px) {
     .planning-card {
-      @apply min-h-[6rem] w-14 text-base px-2 py-3;
+      @apply w-16 min-h-[6.5rem] text-base;
     }
     
     .player-card-large {
-      @apply w-20 h-24 text-lg;
+      @apply w-16 h-20 text-lg;
     }
     
     .player-name-large {
-      @apply text-sm px-2.5 py-1;
+      @apply text-sm;
     }
   }
-  
-  /* 데스크톱 최적화 */
+
   @media (min-width: 1025px) {
     .planning-card {
-      @apply min-h-[7rem] w-16 text-lg px-2 py-3;
+      @apply w-16 min-h-[7rem] text-lg;
     }
     
     .circular-table {
-      @apply w-[28rem] h-[28rem];
+      @apply border-4;
     }
     
     .player-card {
@@ -321,94 +319,102 @@
     }
     
     .player-name-large {
-      @apply text-base px-4 py-2;
+      @apply text-base mt-3;
     }
     
     .center-action-btn {
-      @apply px-8 py-4 text-lg;
+      @apply px-8 py-4 text-xl;
     }
   }
-  
-  /* 텍스트 크기 조정 */
+
+  /* 유틸리티 클래스 */
   .text-responsive {
-    @apply text-sm sm:text-base lg:text-lg;
+    @apply text-sm sm:text-base md:text-lg;
   }
   
-  /* 애니메이션 효과 */
   .animate-pulse-soft {
-    @apply animate-pulse;
-    animation-duration: 2s;
+    animation: pulseSoft 2s ease-in-out infinite;
   }
   
   .animate-bounce-soft {
-    @apply animate-bounce;
-    animation-duration: 1s;
+    animation: bounceSoft 1s ease-in-out infinite;
   }
-  
-  /* 참여자 목록 애니메이션 */
+
+  /* 플레이어 애니메이션 */
   .player-enter {
-    animation: slideInFromLeft 0.3s ease-out;
+    @apply animate-slide-up;
   }
   
   .player-exit {
-    animation: slideOutToLeft 0.3s ease-in;
+    @apply animate-fade-out;
   }
   
   @keyframes slideInFromLeft {
-    from {
+    0% {
       transform: translateX(-100%);
       opacity: 0;
     }
-    to {
+    100% {
       transform: translateX(0);
       opacity: 1;
     }
   }
   
   @keyframes slideOutToLeft {
-    from {
+    0% {
       transform: translateX(0);
       opacity: 1;
     }
-    to {
+    100% {
       transform: translateX(-100%);
       opacity: 0;
     }
   }
-  
-  /* 아바타 펄스 효과 */
+
+  /* 아바타 펄스 애니메이션 */
   .avatar-pulse {
-    animation: avatarPulse 2s infinite;
+    animation: avatarPulse 2s ease-in-out infinite;
   }
   
   @keyframes avatarPulse {
-    0%, 100% { 
+    0% {
       box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
     }
-    50% { 
-      box-shadow: 0 0 0 8px rgba(59, 130, 246, 0);
+    70% {
+      box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
     }
   }
-  
-  /* 스크롤바 스타일링 */
+
+  /* 스크롤바 스타일 */
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: rgb(203 213 225) rgb(248 250 252);
+    scrollbar-color: rgb(156 163 175) rgba(0, 0, 0, 0.1);
+  }
+  
+  .dark .scrollbar-thin {
+    scrollbar-color: rgb(75 85 99) rgba(255, 255, 255, 0.1);
   }
   
   .scrollbar-thin::-webkit-scrollbar {
-    width: 6px;
+    @apply w-2 h-2;
   }
   
   .scrollbar-thin::-webkit-scrollbar-track {
-    @apply bg-gray-100;
+    @apply bg-gray-100 dark:bg-dark-700 rounded-full;
   }
   
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    @apply bg-gray-300 rounded-full;
+    @apply bg-gray-400 dark:bg-gray-600 rounded-full transition-colors duration-200;
   }
   
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    @apply bg-gray-400;
+    @apply bg-gray-500 dark:bg-gray-500;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-corner {
+    @apply bg-transparent;
   }
 } 

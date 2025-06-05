@@ -158,9 +158,9 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
   const gridColumns = getGridColumns(totalUsers);
 
   return (
-    <div className="max-w-6xl mx-auto min-h-screen flex flex-col">
+    <div className="max-w-6xl mx-auto min-h-screen flex flex-col bg-gradient-to-br from-primary-50 to-primary-100 dark:from-dark-900 dark:to-dark-800 p-4">
       {/* 헤더 - 여백 최적화 */}
-      <div className="bg-white rounded-xl p-3 shadow-lg mb-3">
+      <div className="bg-white dark:bg-dark-800 rounded-xl p-3 shadow-lg mb-3 border border-gray-200 dark:border-dark-600">
         <div className="flex justify-between items-center gap-3">
           <div className="flex items-center gap-3 flex-1 min-w-0">
             {isEditingRoomName ? (
@@ -171,30 +171,30 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
                   onChange={(e) => setEditingRoomName(e.target.value)}
                   onKeyDown={handleRoomNameKeyPress}
                   onBlur={finishEditingRoomName}
-                  className="text-lg font-bold text-gray-900 bg-white border border-gray-300 rounded px-2 py-1 min-w-0 flex-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="text-lg font-bold text-gray-900 dark:text-gray-100 bg-white dark:bg-dark-700 border border-gray-300 dark:border-dark-600 rounded px-2 py-1 min-w-0 flex-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
                   maxLength={50}
                   autoFocus
                 />
                 <button
                   onClick={finishEditingRoomName}
-                  className="text-sm bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
+                  className="text-sm bg-green-500 dark:bg-green-600 text-white px-2 py-1 rounded hover:bg-green-600 dark:hover:bg-green-700"
                   disabled={game.loading}
                 >
                   ✓
                 </button>
                 <button
                   onClick={cancelEditingRoomName}
-                  className="text-sm bg-gray-500 text-white px-2 py-1 rounded hover:bg-gray-600"
+                  className="text-sm bg-gray-500 dark:bg-gray-600 text-white px-2 py-1 rounded hover:bg-gray-600 dark:hover:bg-gray-700"
                 >
                   ✕
                 </button>
               </div>
             ) : (
               <div className="relative group flex items-center gap-2 flex-1 min-w-0">
-                <h1 className="text-lg font-bold text-gray-900 truncate">{currentRoom?.name || roomName}</h1>
+                <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100 truncate">{currentRoom?.name || roomName}</h1>
                 <button
                   onClick={startEditingRoomName}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-blue-500 flex-shrink-0"
+                  className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400 flex-shrink-0"
                   title="방 이름 편집"
                   disabled={game.loading}
                 >
@@ -202,7 +202,7 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
                 </button>
               </div>
             )}
-            <span className="text-sm text-gray-600 whitespace-nowrap">
+            <span className="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
               선택: {selectedUsers}/{totalUsers}
             </span>
           </div>
@@ -263,7 +263,7 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
                     {isCurrentUser && currentRoom?.gameState === 'revealed' && (
                       <button
                         onClick={() => setIsCardModalOpen(true)}
-                        className="absolute -top-2 -right-2 bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-blue-600 transition-colors shadow-md"
+                        className="absolute -top-2 -right-2 bg-blue-500 dark:bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors shadow-md"
                         title="카드 선택/수정"
                       >
                         ✏️
@@ -281,21 +281,21 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
                           onChange={(e) => setEditingName(e.target.value)}
                           onKeyDown={handleNameKeyPress}
                           onBlur={finishEditingName}
-                          className="bg-white border border-gray-300 rounded px-2 py-1 text-sm text-center w-20 max-w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="bg-white dark:bg-dark-700 border border-gray-300 dark:border-dark-600 rounded px-2 py-1 text-sm text-center w-20 max-w-full text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
                           maxLength={20}
                           autoFocus
                         />
                         <div className="flex gap-1">
                           <button
                             onClick={finishEditingName}
-                            className="text-xs bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
+                            className="text-xs bg-green-500 dark:bg-green-600 text-white px-2 py-1 rounded hover:bg-green-600 dark:hover:bg-green-700"
                             disabled={game.loading}
                           >
                             ✓
                           </button>
                           <button
                             onClick={cancelEditingName}
-                            className="text-xs bg-gray-500 text-white px-2 py-1 rounded hover:bg-gray-600"
+                            className="text-xs bg-gray-500 dark:bg-gray-600 text-white px-2 py-1 rounded hover:bg-gray-600 dark:hover:bg-gray-700"
                           >
                             ✕
                           </button>
@@ -307,7 +307,7 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
                         {isCurrentUser && (
                           <button
                             onClick={startEditingName}
-                            className="absolute -right-5 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-blue-500"
+                            className="absolute -right-5 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400"
                             title="이름 편집"
                             disabled={game.loading}
                           >
@@ -326,7 +326,7 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
           <div className="mb-4">
             {currentRoom?.gameState === 'selecting' ? (
               <button 
-                className={`px-6 py-3 text-base font-semibold bg-success-600 text-white rounded-lg shadow-md hover:bg-success-700 transition-colors ${!game.canRevealCards || game.loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`px-6 py-3 text-base font-semibold bg-success-600 dark:bg-success-700 text-white rounded-lg shadow-md hover:bg-success-700 dark:hover:bg-success-600 transition-colors ${!game.canRevealCards || game.loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                 disabled={!game.canRevealCards || game.loading}
                 onClick={game.revealCards}
               >
@@ -334,7 +334,7 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
               </button>
             ) : (
               <button 
-                className={`px-6 py-3 text-base font-semibold bg-gray-600 text-white rounded-lg shadow-md hover:bg-gray-700 transition-colors ${game.loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`px-6 py-3 text-base font-semibold bg-gray-600 dark:bg-gray-700 text-white rounded-lg shadow-md hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors ${game.loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                 onClick={game.resetRound}
                 disabled={game.loading}
               >
@@ -345,7 +345,7 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
         </div>
 
         {/* 하단 영역: 게임 결과 (공개 후) - 패딩 최적화 */}
-        <div className="bg-white rounded-xl p-4 shadow-lg min-h-[280px] flex flex-col">
+        <div className="bg-white dark:bg-dark-800 rounded-xl p-4 shadow-lg min-h-[280px] flex flex-col border border-gray-200 dark:border-dark-600">
           {/* 게임 결과 우선 표시 (공개 후) */}
           {game.gameResult && currentRoom?.gameState === 'revealed' ? (
             <div className="flex-1 flex flex-col justify-center">
@@ -360,16 +360,16 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
             <div className="flex-1 flex flex-col">
               {/* 카드 선택 덱 - 여백 최소화 */}
               <div className="text-center mb-2">
-                <h3 className="text-base font-semibold text-gray-900 mb-0.5">
+                <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-0.5">
                   스토리 포인트 선택
                 </h3>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   원하는 포인트 카드를 선택하세요
                 </p>
               </div>
               
               {/* 가로 스크롤 카드 컨테이너 - 여백 최소화 */}
-              <div className="overflow-x-auto pb-1 flex-1 flex flex-col justify-center">
+              <div className="overflow-x-auto scrollbar-thin pb-1 flex-1 flex flex-col justify-center">
                 <div className="flex gap-2 min-w-max px-1 justify-center">
                   {cards.map((card) => {
                     const isSelected = game.isCardSelected(card);
@@ -407,7 +407,7 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
                 
                 {/* 스크롤 힌트 - 여백 최소화 */}
                 <div className="text-center mt-1">
-                  <p className="text-xs text-gray-400">← 좌우로 스크롤하여 모든 카드 확인 →</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500">← 좌우로 스크롤하여 모든 카드 확인 →</p>
                 </div>
               </div>
             </div>
@@ -426,15 +426,15 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
 
       {/* 에러 표시 - 여백 최적화 */}
       {game.error && (
-        <div className="mt-3 bg-red-50 border border-red-200 rounded-lg p-3">
+        <div className="mt-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-3">
           <div className="flex items-center gap-2">
-            <span className="text-red-600">❌</span>
-            <span className="text-red-800 font-medium">오류</span>
+            <span className="text-red-600 dark:text-red-400">❌</span>
+            <span className="text-red-800 dark:text-red-300 font-medium">오류</span>
           </div>
-          <p className="text-red-700 text-sm mt-1">{game.error}</p>
+          <p className="text-red-700 dark:text-red-400 text-sm mt-1">{game.error}</p>
           <button 
             onClick={game.clearError}
-            className="text-red-600 text-sm mt-2 underline"
+            className="text-red-600 dark:text-red-400 text-sm mt-2 underline"
           >
             오류 닫기
           </button>

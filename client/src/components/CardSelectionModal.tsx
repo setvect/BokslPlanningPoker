@@ -45,23 +45,23 @@ export default function CardSelectionModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl max-w-lg w-full max-h-[80vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-dark-800 rounded-xl max-w-lg w-full max-h-[80vh] overflow-y-auto scrollbar-thin border border-gray-200 dark:border-dark-600">
         {/* 모달 헤더 */}
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-xl">
+        <div className="sticky top-0 bg-white dark:bg-dark-800 border-b border-gray-200 dark:border-dark-600 px-6 py-4 rounded-t-xl">
           <div className="flex justify-between items-center">
-            <h2 className="text-lg font-bold text-gray-900">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">
               스토리 포인트 선택
             </h2>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 text-2xl font-bold"
+              className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 text-2xl font-bold"
               disabled={loading}
             >
               ×
             </button>
           </div>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             원하는 포인트 카드를 선택하세요
           </p>
         </div>
@@ -104,9 +104,9 @@ export default function CardSelectionModal({
         </div>
 
         {/* 모달 푸터 */}
-        <div className="sticky bottom-0 bg-gray-50 px-6 py-4 rounded-b-xl border-t border-gray-200">
+        <div className="sticky bottom-0 bg-gray-50 dark:bg-dark-700 px-6 py-4 rounded-b-xl border-t border-gray-200 dark:border-dark-600">
           <div className="flex justify-between items-center">
-            <div className="text-sm text-gray-600 flex items-center gap-1">
+            <div className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1">
               {selectedCard ? (
                 <>
                   선택됨: {renderCardContent(selectedCard)}

@@ -183,10 +183,10 @@ function App() {
   // 연결 상태 표시
   if (game.isConnecting) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 dark:from-dark-900 dark:to-dark-800 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent mx-auto mb-4"></div>
-          <p className="text-primary-700 font-medium">서버에 연결 중...</p>
+          <p className="text-primary-700 dark:text-primary-300 font-medium">서버에 연결 중...</p>
         </div>
       </div>
     );
@@ -195,11 +195,11 @@ function App() {
   // 연결 오류 표시
   if (!game.isConnected && game.socketError) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 flex items-center justify-center">
         <div className="text-center max-w-md mx-auto p-6">
-          <div className="text-red-500 text-4xl mb-4">⚠️</div>
-          <h2 className="text-xl font-bold text-red-700 mb-2">연결 오류</h2>
-          <p className="text-red-600 mb-4">{game.socketError}</p>
+          <div className="text-red-500 dark:text-red-400 text-4xl mb-4">⚠️</div>
+          <h2 className="text-xl font-bold text-red-700 dark:text-red-300 mb-2">연결 오류</h2>
+          <p className="text-red-600 dark:text-red-400 mb-4">{game.socketError}</p>
           <button
             onClick={() => window.location.reload()}
             className="btn btn-primary"
@@ -214,10 +214,10 @@ function App() {
   // 게임 로딩 상태
   if (game.loading && appState === 'game') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 dark:from-dark-900 dark:to-dark-800 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent mx-auto mb-4"></div>
-          <p className="text-primary-700 font-medium">게임 로딩 중...</p>
+          <p className="text-primary-700 dark:text-primary-300 font-medium">게임 로딩 중...</p>
         </div>
       </div>
     );

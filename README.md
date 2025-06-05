@@ -42,31 +42,65 @@
 
 ## 🚀 빠른 시작
 
-### 개발 환경 실행
+### Docker Compose로 실행 (권장)
 
-```bash
-# 저장소 클론
+```powershell
+# 1. 프로젝트 클론
 git clone https://github.com/setvect/BokslPlanningPoker.git
-cd BokslPlanningPoker
+Set-Location BokslPlanningPoker
 
-# Docker Compose로 전체 애플리케이션 실행 (권장)
-docker-compose up
+# 2. Docker Compose로 실행
+docker-compose up --build
 
-# 또는 개별 실행
-# 백엔드 (터미널 1)
-cd server
+# 3. 브라우저에서 접속
+# - 클라이언트: http://localhost:5173
+# - 서버 API: http://localhost:3001
+
+# 4. 백그라운드에서 실행하려면
+docker-compose up -d --build
+
+# 5. 중지
+docker-compose down
+```
+
+### 로컬 개발 환경
+
+```powershell
+# 1. 의존성 설치
+# 서버
+Set-Location server
 npm install
+Set-Location ..
+
+# 클라이언트  
+Set-Location client
+npm install
+Set-Location ..
+
+# 2. 개발 서버 실행
+# 서버 (터미널 1)
+Set-Location server
 npm run dev
 
-# 프론트엔드 (터미널 2)  
-cd client
-npm install
+# 클라이언트 (터미널 2)
+Set-Location client  
 npm run dev
 ```
 
-### 접속
-- **프론트엔드**: http://localhost:5173
-- **백엔드**: http://localhost:3001
+### 프로덕션 빌드
+
+```powershell
+# 클라이언트 빌드
+Set-Location client
+npm run build
+
+# 서버 빌드
+Set-Location server
+npm run build
+
+# 프로덕션 서버 실행
+npm start
+```
 
 ## 📁 프로젝트 구조
 
@@ -107,16 +141,15 @@ BokslPlanningPoker/
 
 ## 🔧 개발
 
-### 스크립트
+### 빌드 스크립트
 
+**Unix/Linux/MacOS:**
 ```bash
 # 클라이언트 빌드
-cd client
-npm run build
+cd client && npm run build
 
 # 서버 빌드
-cd server
-npm run build
+cd server && npm run build
 
 # 타입 검사
 cd client && npm run type-check
@@ -125,6 +158,114 @@ cd server && npm run type-check
 # 코드 품질 검사 (ESLint)
 cd client && npm run lint
 cd server && npm run lint
+```
+
+**Windows PowerShell:**
+```powershell
+# 클라이언트 빌드
+cd client
+npm run build
+cd ..
+
+# 서버 빌드
+cd server
+npm run build
+cd ..
+
+# 타입 검사
+cd client
+npm run type-check
+cd ..
+cd server
+npm run type-check
+cd ..
+
+# 코드 품질 검사 (ESLint)
+cd client
+npm run lint
+cd ..
+cd server
+npm run lint
+cd ..
+```
+
+## 🐳 Docker 이미지 빌드
+
+### 개별 프로젝트 빌드
+
+**Windows PowerShell:**
+```powershell
+# 클라이언트 빌드
+cd client
+npm install
+npm run build
+cd ..
+
+# 서버 빌드
+cd server
+npm install
+npm run build
+cd ..
+```
+
+### Docker 이미지 빌드
+
+```powershell
+# Docker Desktop 상태 확인
+docker --version
+docker info
+
+# 프로덕션 이미지 빌드 (루트 디렉토리에서)
+docker build -t planning-poker:latest .
+
+# 또는 버전 태그 포함
+docker build -t planning-poker:1.0.0 .
+```
+
+### Docker Compose 사용
+
+```powershell
+# 개발 환경 실행
+docker-compose up
+
+# 백그라운드에서 실행
+docker-compose up -d
+
+# 프로덕션 프로파일 실행
+docker-compose --profile production up
+
+# 컨테이너 중지
+docker-compose down
+```
+
+### 빌드된 이미지 실행
+
+```powershell
+# 이미지 실행
+docker run -p 3001:3001 planning-poker:latest
+
+# 백그라운드에서 실행
+docker run -d -p 3001:3001 --name planning-poker-app planning-poker:latest
+
+# 실행 중인 컨테이너 확인
+docker ps
+
+# 컨테이너 중지 및 삭제
+docker stop planning-poker-app
+docker rm planning-poker-app
+```
+
+### 이미지 관리
+
+```powershell
+# 이미지 목록 확인
+docker images
+
+# 이미지 삭제
+docker rmi planning-poker:latest
+
+# 사용하지 않는 이미지 정리
+docker image prune
 ```
 
 ### 주요 기능

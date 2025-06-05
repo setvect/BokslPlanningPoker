@@ -1,0 +1,21 @@
+FROM node:18-alpine
+
+# 작업 디렉토리 설정
+WORKDIR /app
+
+# 서버 종속성 설치
+COPY server/package*.json ./server/
+WORKDIR /app/server
+RUN npm install
+
+# 개발용 TypeScript 및 도구 설치
+RUN npm install -g ts-node nodemon
+
+# 서버 디렉토리로 이동
+WORKDIR /app/server
+
+# 포트 노출
+EXPOSE 3001
+
+# 개발 서버 시작
+CMD ["npm", "run", "dev"] 

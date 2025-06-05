@@ -4,48 +4,37 @@ services:
   # 백엔드 서버
   server:
     build:
-      context: ./server
-      dockerfile: Dockerfile.dev
+      context: .
+      dockerfile: docker/Dockerfile.server
     ports:
       - "3001:3001"
     volumes:
-      - ./server:/app
-      - /app/node_modules
+      - ./server:/app/server
+      - ./shared:/app/shared
+      - /app/server/node_modules
     environment:
       - NODE_ENV=development
       - PORT=3001
     command: npm run dev
-    depends_on:
-      - client
+    working_dir: /app/server
 
   # 프론트엔드 클라이언트
   client:
     build:
-      context: ./client
-      dockerfile: Dockerfile.dev
+      context: .
+      dockerfile: docker/Dockerfile.client
     ports:
       - "5173:5173"
     volumes:
-      - ./client:/app
-      - /app/node_modules
+      - ./client:/app/client
+      - ./shared:/app/shared
+      - /app/client/node_modules
     environment:
       - NODE_ENV=development
       - VITE_SERVER_URL=http://localhost:3001
     command: npm run dev
-
-  # 개발용 통합 서비스 (옵션)
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "3000:3001"
-    environment:
-      - NODE_ENV=production
-      - PORT=3001
-    profiles:
-      - production
+    working_dir: /app/client
 
 networks:
   default:
-    name: planning-poker-network 
+    driver: bridge 

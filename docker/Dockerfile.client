@@ -1,0 +1,18 @@
+FROM node:18-alpine
+
+# 작업 디렉토리 설정
+WORKDIR /app
+
+# 클라이언트 종속성 설치
+COPY client/package*.json ./client/
+WORKDIR /app/client
+RUN npm install
+
+# 클라이언트 디렉토리로 이동
+WORKDIR /app/client
+
+# 포트 노출
+EXPOSE 5173
+
+# 개발 서버 시작
+CMD ["npm", "run", "dev"] 

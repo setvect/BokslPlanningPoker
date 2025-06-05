@@ -1,18 +1,66 @@
-FROM node:18-alpine
+# docker/Dockerfile.client
+# 멀티 스테이지 빌드로 프로덕션 최적화
 
-# 작업 디렉토리 설정
+# 개발용 빌드 스테이지
+FROM node:18-alpine AS development
+
 WORKDIR /app
+
+# 공통 종속성 복사
+COPY shared/ ./shared/
 
 # 클라이언트 종속성 설치
 COPY client/package*.json ./client/
 WORKDIR /app/client
-RUN npm install
+RUN npm ci && npm cache clean --force
 
-# 클라이언트 디렉토리로 이동
+# 빌드 스테이지 (프로덕션용)
+FROM node:18-alpine AS builder
+
+WORKDIR /app
+
+# 공통 종속성 복사
+COPY shared/ ./shared/
+
+# 클라이언트 종속성 설치
+COPY client/package*.json ./client/
 WORKDIR /app/client
+RUN npm ci && npm cache clean --force
+
+# 클라이언트 소스 코드 복사
+COPY client/src ./src
+COPY client/public ./public
+COPY client/index.html ./
+COPY client/vite.config.ts ./
+COPY client/tsconfig*.json ./
+COPY client/tailwind.config.js ./
+COPY client/postcss.config.js ./
+
+# 환경 변수 설정 (빌드 시점)
+ENV VITE_SERVER_URL=http://localhost:3001
+
+# 프로덕션 빌드
+RUN npm run build
+
+# 프로덕션 스테이지 (nginx 서빙)
+FROM nginx:alpine AS production
+
+# 보안: non-root 사용자 생성
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S client -u 1001
+
+# nginx 설정 복사
+COPY docker/nginx.conf /etc/nginx/nginx.conf
+
+# 빌드된 파일을 nginx 웹 루트로 복사
+COPY --from=builder --chown=client:nodejs /app/client/dist /usr/share/nginx/html
 
 # 포트 노출
-EXPOSE 5173
+EXPOSE 80
 
-# 개발 서버 시작
-CMD ["npm", "run", "dev"] 
+# 헬스체크 추가
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget --quiet --tries=1 --spider http://localhost/ || exit 1
+
+# nginx 시작
+CMD ["nginx", "-g", "daemon off;"] 

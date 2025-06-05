@@ -42,25 +42,74 @@
 
 ## 🚀 빠른 시작
 
-### Docker Compose로 실행 (권장)
+### Docker로 실행 (권장)
+
+#### 1. 자동 빌드 스크립트 사용 (Windows)
 
 ```powershell
 # 1. 프로젝트 클론
 git clone https://github.com/setvect/BokslPlanningPoker.git
 Set-Location BokslPlanningPoker
 
-# 2. Docker Compose로 실행
+# 2. 개발 환경 실행
+.\scripts\build.ps1 -Mode dev
+
+# 3. 프로덕션 환경 실행
+.\scripts\build.ps1 -Mode prod
+
+# 4. Docker 정리
+.\scripts\build.ps1 -Mode clean
+```
+
+#### 2. Docker Compose 직접 사용
+
+**개발 환경:**
+```powershell
+# 개발 서버 실행 (핫 리로드 지원)
 docker-compose up --build
 
-# 3. 브라우저에서 접속
-# - 클라이언트: http://localhost:5173
-# - 서버 API: http://localhost:3001
-
-# 4. 백그라운드에서 실행하려면
+# 백그라운드 실행
 docker-compose up -d --build
 
-# 5. 중지
+# 중지
 docker-compose down
+
+# 접속 주소:
+# - 클라이언트: http://localhost:5173
+# - 서버 API: http://localhost:3001
+```
+
+**프로덕션 환경:**
+```powershell
+# 프로덕션 서버 실행 (nginx + Node.js)
+docker-compose -f docker-compose.prod.yml up --build
+
+# 백그라운드 실행
+docker-compose -f docker-compose.prod.yml up -d --build
+
+# 중지
+docker-compose -f docker-compose.prod.yml down
+
+# 접속 주소:
+# - 웹사이트: http://localhost
+# - API 서버: http://localhost:3001
+```
+
+#### 3. 단일 컨테이너 빌드
+
+```powershell
+# 단일 이미지 빌드
+docker build -t planning-poker .
+
+# 컨테이너 실행
+docker run -d -p 80:80 -p 3001:3001 --name planning-poker planning-poker
+
+# 헬스체크
+docker exec planning-poker wget --quiet --tries=1 --spider http://localhost/health
+
+# 중지 및 제거
+docker stop planning-poker
+docker rm planning-poker
 ```
 
 ### 로컬 개발 환경

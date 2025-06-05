@@ -39,9 +39,14 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 정적 파일 서빙 (프로덕션용 - 클라이언트 빌드 파일)
-const clientBuildPath = path.join(__dirname, '../../client/dist');
-app.use(express.static(clientBuildPath));
+// 정적 파일 서빙 (프로덕션 환경에서만)
+if (NODE_ENV === 'production') {
+  const clientBuildPath = path.join(__dirname, '../../client/dist');
+  console.log(`📁 정적 파일 서빙 경로: ${clientBuildPath}`);
+  app.use(express.static(clientBuildPath));
+} else {
+  console.log(`🔧 개발 모드: 정적 파일 서빙 비활성화`);
+}
 
 // API 라우트
 app.get('/health', (req, res) => {
@@ -67,10 +72,24 @@ app.get('/api/stats', (req, res) => {
   });
 });
 
-// SPA 라우팅 지원 (모든 경로를 index.html로)
-app.get('*', (req, res) => {
-  res.sendFile(path.join(clientBuildPath, 'index.html'));
-});
+// SPA 라우팅 지원 (프로덕션 환경에서만)
+if (NODE_ENV === 'production') {
+  app.get('*', (req, res) => {
+    const clientBuildPath = path.join(__dirname, '../../client/dist');
+    res.sendFile(path.join(clientBuildPath, 'index.html'));
+  });
+} else {
+  // 개발 환경에서는 기본 응답
+  app.get('/', (req, res) => {
+    res.json({ 
+      message: '플래닝 포커 API 서버',
+      environment: 'development',
+      frontend: 'http://localhost:5173에서 실행 중',
+      health: '/health',
+      stats: '/api/stats'
+    });
+  });
+}
 
 // Socket.io 이벤트 핸들러 설정
 setupSocketHandlers(io);

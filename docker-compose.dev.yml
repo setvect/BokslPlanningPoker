@@ -1,0 +1,47 @@
+# docker-compose.dev.yml
+# 빠른 개발 환경용 Docker Compose 설정
+
+services:
+  # 백엔드 서버 (간단한 Node.js 이미지 사용)
+  server:
+    image: node:18-alpine
+    container_name: planning_poker_server_dev
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./server:/app/server
+      - ./shared:/app/shared
+      - /app/server/node_modules
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+    command: sh -c "cd /app/server && npm install && npm run dev"
+    working_dir: /app/server
+    networks:
+      - planning_poker_network
+
+  # 프론트엔드 클라이언트 (간단한 Node.js 이미지 사용)
+  client:
+    image: node:18-alpine
+    container_name: planning_poker_client_dev
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./client:/app/client
+      - ./shared:/app/shared
+      - /app/client/node_modules
+    environment:
+      - NODE_ENV=development
+      - VITE_SERVER_URL=http://localhost:3001
+      - VITE_HOST=0.0.0.0
+    command: sh -c "cd /app/client && npm install && npm run dev -- --host 0.0.0.0"
+    working_dir: /app/client
+    depends_on:
+      - server
+    networks:
+      - planning_poker_network
+
+networks:
+  planning_poker_network:
+    driver: bridge
+    name: planning_poker_network 

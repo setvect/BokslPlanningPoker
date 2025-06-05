@@ -1,0 +1,61 @@
+# docker-compose.prod.yml
+# 프로덕션 환경용 Docker Compose 설정
+
+version: '3.8'
+
+services:
+  # 백엔드 서버
+  server:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.server
+      target: production
+    container_name: planning_poker_server
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+    restart: unless-stopped
+    networks:
+      - planning_poker_network
+    healthcheck:
+      test: ["CMD", "node", "-e", "const http = require('http'); http.get('http://localhost:3001/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1); }).on('error', () => process.exit(1));"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # 프론트엔드 클라이언트 (nginx)
+  client:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.client
+      target: production
+      args:
+        - VITE_SERVER_URL=http://localhost:3001
+    container_name: planning_poker_client
+    ports:
+      - "80:80"
+    depends_on:
+      server:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - planning_poker_network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  planning_poker_network:
+    driver: bridge
+    name: planning_poker_network
+
+volumes:
+  # 필요시 데이터 볼륨 추가 가능
+  server_data:
+    driver: local 

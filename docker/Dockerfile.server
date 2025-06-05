@@ -1,21 +1,58 @@
-FROM node:18-alpine
+# docker/Dockerfile.server
+# 멀티 스테이지 빌드로 프로덕션 최적화
 
-# 작업 디렉토리 설정
+# 빌드 스테이지
+FROM node:18-alpine AS builder
+
 WORKDIR /app
 
-# 서버 종속성 설치
+# 공통 종속성 복사 및 설치
+COPY shared/ ./shared/
 COPY server/package*.json ./server/
+
+# 서버 의존성 설치
 WORKDIR /app/server
-RUN npm install
+RUN npm ci --only=production && npm cache clean --force
 
-# 개발용 TypeScript 및 도구 설치
-RUN npm install -g ts-node nodemon
+# TypeScript 빌드용 의존성 추가 설치
+RUN npm install typescript ts-node @types/node
 
-# 서버 디렉토리로 이동
+# 서버 소스 코드 복사
+COPY server/src ./src
+COPY server/tsconfig.json ./
+
+# TypeScript 빌드
+RUN npm run build
+
+# 프로덕션 스테이지
+FROM node:18-alpine AS production
+
+# 보안: non-root 사용자 생성
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S server -u 1001
+
+WORKDIR /app
+
+# 공통 타입 복사
+COPY --chown=server:nodejs shared/ ./shared/
+
+# 서버 설정 및 빌드된 파일 복사
+COPY --from=builder --chown=server:nodejs /app/server/dist ./server/dist
+COPY --from=builder --chown=server:nodejs /app/server/package*.json ./server/
+COPY --from=builder --chown=server:nodejs /app/server/node_modules ./server/node_modules
+
+# 작업 디렉토리 변경
 WORKDIR /app/server
 
 # 포트 노출
 EXPOSE 3001
 
-# 개발 서버 시작
-CMD ["npm", "run", "dev"] 
+# non-root 사용자로 전환
+USER server
+
+# 헬스체크 추가
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node -e "const http = require('http'); http.get('http://localhost:3001/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1); }).on('error', () => process.exit(1));"
+
+# 프로덕션 서버 시작
+CMD ["npm", "start"] 

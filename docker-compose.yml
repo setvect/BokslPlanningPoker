@@ -23,6 +23,7 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.client
+      target: development
     ports:
       - "5173:5173"
     volumes:
@@ -32,8 +33,11 @@ services:
     environment:
       - NODE_ENV=development
       - VITE_SERVER_URL=http://localhost:3001
-    command: npm run dev
+      - VITE_HOST=0.0.0.0
+    command: npm run dev -- --host 0.0.0.0
     working_dir: /app/client
+    depends_on:
+      - server
 
 networks:
   default:

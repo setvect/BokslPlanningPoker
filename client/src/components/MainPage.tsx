@@ -60,29 +60,29 @@ export default function MainPage({ onCreateRoom, onJoinRoom, error, onClearError
 
   return (
     <div className="min-h-screen flex items-start justify-center pt-20 bg-gradient-to-br from-primary-50 to-primary-100 dark:from-dark-900 dark:to-dark-800">
+      {/* 화면 우측 상단 고정 컨트롤 버튼들 */}
+      <div className="fixed top-4 right-4 flex items-center gap-3 z-50">
+        {/* 테마 토글 버튼 */}
+        <ThemeToggle />
+        
+        {/* 정보 버튼 */}
+        <button
+          onClick={() => setShowAbout(true)}
+          className="w-10 h-10 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-dark-700 bg-white dark:bg-dark-800 shadow-md border border-gray-200 dark:border-dark-600"
+          title="복슬 플래닝 포커 정보"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </button>
+      </div>
+
       <div className="max-w-4xl mx-auto text-center w-full px-4">
         {/* 헤더 */}
-        <div className="mb-12 relative">
-          <h1 className="text-5xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+        <div className="mb-12">
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
             🃏 복슬 플래닝 포커
           </h1>
-          
-          {/* 컨트롤 버튼들 */}
-          <div className="absolute top-0 right-0 flex items-center gap-2">
-            {/* 테마 토글 버튼 */}
-            <ThemeToggle />
-            
-            {/* 정보 버튼 */}
-            <button
-              onClick={() => setShowAbout(true)}
-              className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors p-2 rounded-full hover:bg-gray-100 dark:hover:bg-dark-700"
-              title="복슬 플래닝 포커 정보"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </button>
-          </div>
         </div>
 
         {/* 에러 메시지 */}

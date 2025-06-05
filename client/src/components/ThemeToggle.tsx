@@ -18,10 +18,10 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = '' }) => {
       onClick={toggleTheme}
       className={`
         relative inline-flex items-center justify-center 
-        w-12 h-12 rounded-full
+        w-10 h-10 rounded-full
         bg-white dark:bg-dark-800 
-        border-2 border-gray-200 dark:border-dark-600
-        shadow-lg hover:shadow-xl
+        border border-gray-200 dark:border-dark-600
+        shadow-md hover:shadow-lg
         transition-all duration-300 ease-in-out
         hover:scale-110 active:scale-95
         focus:outline-none focus:ring-4 focus:ring-primary-200 dark:focus:ring-primary-400
@@ -34,7 +34,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = '' }) => {
       {/* 라이트 모드 아이콘 (해) */}
       <svg
         className={`
-          absolute w-6 h-6 text-yellow-500 transition-all duration-500 ease-in-out
+          absolute w-5 h-5 text-yellow-500 transition-all duration-500 ease-in-out
           ${isDark ? 'opacity-0 rotate-90 scale-50' : 'opacity-100 rotate-0 scale-100'}
         `}
         fill="currentColor"
@@ -50,7 +50,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = '' }) => {
       {/* 다크 모드 아이콘 (달) */}
       <svg
         className={`
-          absolute w-6 h-6 text-slate-700 dark:text-slate-300 transition-all duration-500 ease-in-out
+          absolute w-5 h-5 text-slate-700 dark:text-slate-300 transition-all duration-500 ease-in-out
           ${isDark ? 'opacity-100 rotate-0 scale-100' : 'opacity-0 -rotate-90 scale-50'}
         `}
         fill="currentColor"

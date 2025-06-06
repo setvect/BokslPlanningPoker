@@ -368,96 +368,50 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
                 </p>
               </div>
               
-              {/* 반응형 카드 컨테이너 */}
+              {/* 카드 선택 영역 - 통합 반응형 */}
               <div className="flex-1 flex flex-col justify-center">
-                {/* 모바일: 가로 스크롤 */}
-                <div className="block sm:hidden">
-                  <div className="overflow-x-auto scrollbar-thin pb-1">
-                    <div className="flex gap-1 px-1 min-w-max">
-                      {cards.map((card) => {
-                        const isSelected = game.isCardSelected(card);
-                        const isDisabled = game.loading || !currentRoom;
-                        
-                        return (
-                          <button
-                            key={card}
-                            className={`planning-card flex-shrink-0 
-                              w-9 min-h-[2.75rem]
-                              ${isSelected ? 'selected' : ''} ${getCardSpecialClass(card)} ${
-                              game.loading && isSelected ? 'animate-pulse-soft' : ''
-                            }`}
-                            onClick={() => game.selectCard(card)}
-                            disabled={isDisabled}
-                            title={isDisabled ? 
-                              `현재 선택할 수 없습니다` : 
-                              `${card} 포인트 선택`
-                            }
-                          >
-                            <span className="planning-card-content text-sm">
-                              {renderCardContent(card)}
-                            </span>
-                            {isSelected && (
-                              <div className="absolute inset-0 flex items-center justify-center bg-primary-500 bg-opacity-20 rounded-xl">
-                                <div className="w-2.5 h-2.5 border-2 border-primary-600 rounded-full flex items-center justify-center">
-                                  <div className="w-1 h-1 bg-primary-600 rounded-full"></div>
-                                </div>
-                              </div>
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-                
-                {/* 태블릿 이상: 반응형 그리드 */}
-                <div className="hidden sm:block">
-                  <div className="flex gap-2 justify-center flex-wrap max-w-full">
-                    {cards.map((card) => {
-                      const isSelected = game.isCardSelected(card);
-                      const isDisabled = game.loading || !currentRoom;
-                      
-                      return (
-                        <button
-                          key={card}
-                          className={`planning-card flex-shrink-0 
-                            w-11 min-h-[3.25rem]
-                            md:w-12 md:min-h-[3.5rem]
-                            lg:w-14 lg:min-h-[4rem]
-                            xl:w-16 xl:min-h-[4.5rem]
-                            ${isSelected ? 'selected' : ''} ${getCardSpecialClass(card)} ${
-                            game.loading && isSelected ? 'animate-pulse-soft' : ''
-                          }`}
-                          onClick={() => game.selectCard(card)}
-                          disabled={isDisabled}
-                          title={isDisabled ? 
-                            `현재 선택할 수 없습니다` : 
-                            `${card} 포인트 선택`
-                          }
-                        >
-                          <span className="planning-card-content 
-                            text-sm
-                            md:text-base
-                            lg:text-lg
-                            xl:text-xl">
-                            {renderCardContent(card)}
-                          </span>
-                          {isSelected && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-primary-500 bg-opacity-20 rounded-xl">
-                              <div className="w-3 h-3 md:w-4 md:h-4 lg:w-5 lg:h-5 xl:w-6 xl:h-6 border-2 border-primary-600 rounded-full flex items-center justify-center">
-                                <div className="w-1 h-1 md:w-1.5 md:h-1.5 lg:w-2 lg:h-2 xl:w-2.5 xl:h-2.5 bg-primary-600 rounded-full"></div>
-                              </div>
+                <div className="flex gap-1 sm:gap-2 justify-center flex-wrap max-w-full px-1">
+                  {cards.map((card) => {
+                    const isSelected = game.isCardSelected(card);
+                    const isDisabled = game.loading || !currentRoom;
+                    
+                    return (
+                      <button
+                        key={card}
+                        className={`planning-card flex-shrink-0 
+                          w-9 min-h-[2.75rem]
+                          sm:w-11 sm:min-h-[3.25rem]
+                          md:w-12 md:min-h-[3.5rem]
+                          lg:w-14 lg:min-h-[4rem]
+                          xl:w-16 xl:min-h-[4.5rem]
+                          ${isSelected ? 'selected' : ''} ${getCardSpecialClass(card)} ${
+                          game.loading && isSelected ? 'animate-pulse-soft' : ''
+                        }`}
+                        onClick={() => game.selectCard(card)}
+                        disabled={isDisabled}
+                        title={isDisabled ? 
+                          `현재 선택할 수 없습니다` : 
+                          `${card} 포인트 선택`
+                        }
+                      >
+                        <span className="planning-card-content 
+                          text-sm
+                          sm:text-sm
+                          md:text-base
+                          lg:text-lg
+                          xl:text-xl">
+                          {renderCardContent(card)}
+                        </span>
+                        {isSelected && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-primary-500 bg-opacity-20 rounded-xl">
+                            <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-4 md:h-4 lg:w-5 lg:h-5 xl:w-6 xl:h-6 border-2 border-primary-600 rounded-full flex items-center justify-center">
+                              <div className="w-1 h-1 sm:w-1 sm:h-1 md:w-1.5 md:h-1.5 lg:w-2 lg:h-2 xl:w-2.5 xl:h-2.5 bg-primary-600 rounded-full"></div>
                             </div>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-                
-                {/* 스크롤 힌트 - 모바일에만 표시 */}
-                <div className="text-center mt-1 block sm:hidden">
-                  <p className="text-xs text-gray-400 dark:text-gray-500">← 좌우로 스크롤하여 모든 카드 확인 →</p>
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </div>

@@ -330,7 +330,7 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
                 disabled={!game.canRevealCards || game.loading}
                 onClick={game.revealCards}
               >
-                {game.loading ? '카드 오픈 중...' : '카드 오픈'}
+                {game.loading ? '카드 오픈 중...' : `카드 오픈(${selectedUsers}/${totalUsers})`}
               </button>
             ) : (
               <button 

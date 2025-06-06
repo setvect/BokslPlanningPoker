@@ -54,7 +54,6 @@
 
 ### 3.4. 배포
 - **Docker** - 컨테이너화
-- **fly.io** - 호스팅
 
 ## 4. 🚀 빠른 시작
 
@@ -395,11 +394,7 @@ docker stats planning-poker
 - [기술 스택 상세](./docs/기술스택.md)
 - [구현 단계](./docs/구현단계.md)
 
-## 8. 📝 라이선스
-
-MIT License - 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
-
-## 9. 🤝 지원
+## 8. 🤝 지원
 
 문제가 있거나 기능 제안이 있으시면 [Issues](../../issues)를 열어주세요.
 

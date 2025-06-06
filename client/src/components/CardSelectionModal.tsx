@@ -61,9 +61,6 @@ export default function CardSelectionModal({
               ×
             </button>
           </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            원하는 포인트 카드를 선택하세요
-          </p>
         </div>
 
         {/* 카드 선택 영역 */}

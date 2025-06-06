@@ -43,11 +43,6 @@
            text-primary-700 dark:text-primary-300 shadow-lg shadow-primary-200 dark:shadow-primary-900/50 transform scale-105;
   }
   
-  .planning-card.selected::after {
-    @apply absolute top-2 right-2 w-3 h-3 bg-primary-500 rounded-full;
-    content: '';
-  }
-  
   .planning-card.revealed {
     @apply border-success-400 dark:border-success-500 bg-gradient-to-br from-success-50 to-success-100 dark:from-success-900/50 dark:to-success-800/50
            shadow-lg shadow-success-200 dark:shadow-success-900/50;

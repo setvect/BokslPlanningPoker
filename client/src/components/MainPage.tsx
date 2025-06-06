@@ -77,7 +77,7 @@ export default function MainPage({ onCreateRoom, onJoinRoom, error, onClearError
         </button>
       </div>
 
-      <div className="max-w-4xl mx-auto text-center w-full px-4">
+      <div className="max-w-4xl mx-auto text-center w-full p-5">
         {/* 헤더 */}
         <div className="mb-12">
           <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">

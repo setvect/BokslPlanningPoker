@@ -263,14 +263,13 @@ class GameStore {
     return roomId ? this.rooms.get(roomId) || null : null;
   }
   
-  // 활성 방 목록 조회 (사용자가 있는 방만)
+  // 활성 방 목록 조회 (모든 방 포함)
   getActiveRooms(): SharedRoom[] {
     const activeRooms: SharedRoom[] = [];
     
     for (const room of this.rooms.values()) {
-      if (room.users.size > 0) {
-        activeRooms.push(this.serializeRoom(room));
-      }
+      // 참여자가 0명인 방도 목록에 포함
+      activeRooms.push(this.serializeRoom(room));
     }
     
     // 생성 시간 기준으로 정렬 (최신순)

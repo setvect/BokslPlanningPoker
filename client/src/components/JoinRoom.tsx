@@ -102,7 +102,7 @@ export default function JoinRoom({ roomId, roomName, onBack, onJoin, error, load
             <div className="flex items-start gap-2">
               <span className="text-blue-500 dark:text-blue-400 text-lg">💡</span>
               <div className="text-sm text-blue-700 dark:text-blue-300">
-                <strong>팁:</strong> 같은 이름이 있으면 자동으로 번호가 추가됩니다 (예: 김철수(2))
+                <strong>팁:</strong> 같은 이름이 있으면 자동으로 번호가 추가됩니다 (예: 복슬이(2))
               </div>
             </div>
           </div>

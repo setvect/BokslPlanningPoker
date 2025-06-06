@@ -168,7 +168,7 @@
   }
   
   .player-card.waiting {
-    @apply bg-gray-100 dark:bg-dark-700 border-gray-300 dark:border-dark-600 text-gray-400 dark:text-gray-500 animate-pulse;
+    @apply bg-gray-100 dark:bg-dark-700 border-gray-300 dark:border-dark-600 text-gray-400 dark:text-gray-500;
   }
   
   .player-card.selected {
@@ -191,7 +191,7 @@
   }
   
   .player-card-large.waiting {
-    @apply bg-gray-100 dark:bg-dark-700 border-gray-300 dark:border-dark-600 text-gray-400 dark:text-gray-500 animate-pulse;
+    @apply bg-gray-100 dark:bg-dark-700 border-gray-300 dark:border-dark-600 text-gray-400 dark:text-gray-500;
   }
   
   .player-card-large.selected {
@@ -332,9 +332,7 @@
     @apply text-sm sm:text-base md:text-lg;
   }
   
-  .animate-pulse-soft {
-    animation: pulseSoft 2s ease-in-out infinite;
-  }
+
   
   .animate-bounce-soft {
     animation: bounceSoft 1s ease-in-out infinite;

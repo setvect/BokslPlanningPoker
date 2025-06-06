@@ -77,9 +77,7 @@ export default function CardSelectionModal({
                   key={card}
                   className={`planning-card ${
                     isSelected ? 'selected' : ''
-                  } ${getCardSpecialClass(card)} ${
-                    loading && isSelected ? 'animate-pulse-soft' : ''
-                  } aspect-[3/4] min-h-[4rem]`}
+                  } ${getCardSpecialClass(card)} aspect-[3/4] min-h-[4rem]`}
                   onClick={() => {
                     onSelectCard(card);
                     onClose();

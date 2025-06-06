@@ -372,9 +372,7 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
                         md:w-12 md:min-h-[3.5rem]
                         lg:w-14 lg:min-h-[4rem]
                         xl:w-16 xl:min-h-[4.5rem]
-                        ${isSelected ? 'selected' : ''} ${getCardSpecialClass(card)} ${
-                        game.loading && isSelected ? 'animate-pulse-soft' : ''
-                      }`}
+                        ${isSelected ? 'selected' : ''} ${getCardSpecialClass(card)}`}
                       onClick={() => game.selectCard(card)}
                       disabled={isDisabled}
                       title={isDisabled ? 

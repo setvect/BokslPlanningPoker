@@ -36,46 +36,52 @@
 - **Tailwind CSS** - 스타일링 (다크모드 지원)
 - **Socket.io-client** - 실시간 통신
 
-### 3.3. 배포
+### 3.3. 개발 환경
+- **WSL2 Ubuntu** - 윈도우에서 Linux 개발 환경
+- **Docker** - 컨테이너화 (WSL2 백엔드)
+- **VSCode Remote-WSL** - 통합 개발 환경
+
+### 3.4. 배포
 - **Docker** - 컨테이너화
 - **fly.io** - 호스팅
 
 ## 4. 🚀 빠른 시작
 
 
-### 4.1. 로컬 개발 환경
+### 4.1. 로컬 개발 환경 (WSL)
 
-```powershell
+```bash
 # 1. 의존성 설치
 # 서버
-Set-Location server
+cd server
 npm install
-Set-Location ..
+cd ..
 
 # 클라이언트  
-Set-Location client
+cd client
 npm install
-Set-Location ..
+cd ..
 
 # 2. 개발 서버 실행
 # 서버 (터미널 1)
-Set-Location server
+cd server
 npm run dev
 
 # 클라이언트 (터미널 2)
-Set-Location client  
+cd client
 npm run dev
 ```
 
 ### 4.2. 프로덕션 빌드
 
-```powershell
+```bash
 # 클라이언트 빌드
-Set-Location client
+cd client
 npm run build
+cd ..
 
 # 서버 빌드
-Set-Location server
+cd server
 npm run build
 
 # 프로덕션 서버 실행
@@ -121,58 +127,30 @@ BokslPlanningPoker/
 
 ### 7.1. 빌드 스크립트
 
-**Unix/Linux/MacOS:**
 ```bash
 # 클라이언트 빌드
-cd client && npm run build
+cd client && npm run build && cd ..
 
 # 서버 빌드
-cd server && npm run build
+cd server && npm run build && cd ..
 
 # 타입 검사
-cd client && npm run type-check
-cd server && npm run type-check
+cd client && npm run type-check && cd ..
+cd server && npm run type-check && cd ..
 
 # 코드 품질 검사 (ESLint)
-cd client && npm run lint
-cd server && npm run lint
-```
+cd client && npm run lint && cd ..
+cd server && npm run lint && cd ..
 
-**Windows PowerShell:**
-```powershell
-# 클라이언트 빌드
-cd client
-npm run build
-cd ..
-
-# 서버 빌드
-cd server
-npm run build
-cd ..
-
-# 타입 검사
-cd client
-npm run type-check
-cd ..
-cd server
-npm run type-check
-cd ..
-
-# 코드 품질 검사 (ESLint)
-cd client
-npm run lint
-cd ..
-cd server
-npm run lint
-cd ..
+# 전체 프로젝트 빌드 (한 번에)
+(cd client && npm run build) && (cd server && npm run build)
 ```
 
 ## 8. 🐳 Docker 이미지 빌드
 
 ### 8.1. 개별 프로젝트 빌드
 
-**Windows PowerShell:**
-```powershell
+```bash
 # 클라이언트 빌드
 cd client
 npm install
@@ -184,6 +162,9 @@ cd server
 npm install
 npm run build
 cd ..
+
+# 또는 한 번에 실행
+(cd client && npm install && npm run build) && (cd server && npm install && npm run build)
 ```
 ## 9. 📝 라이선스
 

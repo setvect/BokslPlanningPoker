@@ -128,6 +128,7 @@ planning-poker/
   d. 실시간 동기화 테스트
 - 병합을 제안하기 전에 자체 검토를 수행합니다.
 - 서버와 클라이언트 모두 빌드 성공 확인
+- WSL 환경에서 개발 및 테스트 수행
 
 ## 11. 모범 사례
 
@@ -153,12 +154,13 @@ planning-poker/
 - 메모리 사용량 모니터링 및 최적화
 - 사용자 피드백 반영
 
-## 14. Windows 호환성
+## 14. WSL 개발 환경
 
-- Windows 사용자를 위한 PowerShell 명령 제공
-- Unix 특정 명령어를 피하세요(예: `rm` 대신 `Remove-Item` 사용)
-- 가능한 경우 크로스 플랫폼 Node.js 명령을 사용하세요.
-- Docker 명령어도 Windows 호환성 고려
+- WSL2 Ubuntu를 기본 개발 환경으로 사용
+- Linux 표준 명령어 및 도구 활용
+- Windows와 WSL 간 파일 공유 고려 (성능 최적화)
+- Docker Desktop WSL2 백엔드로 컨테이너 개발
+- VSCode Remote-WSL 확장으로 통합 개발 환경 구축
 
 ## 15. 디자인 및 사용자 경험
 
@@ -224,10 +226,12 @@ io.to(roomId).emit('room_update', {
 - 로그 출력 (개발환경에서만)
 - Graceful degradation (실시간 기능 실패 시 폴백)
 
-## 21. 터미널 명령어
-- PowerShell 명령어 사용
-- Unix 특정 명령어 피하기 (예: `rm` 대신 `Remove-Item`)
-- 가능한 경우 크로스 플랫폼 Node.js 명령 사용
-- Docker 명령어도 Windows 호환성 고려
+## 21. 터미널 명령어 (WSL 기반)
+- WSL Ubuntu 터미널을 기본으로 사용
+- Linux 명령어 사용 (`rm`, `cp`, `mv`, `ls`, `grep` 등)
+- Bash 스크립트 작성 및 실행
+- Docker는 WSL2 백엔드 사용으로 네이티브 성능
+- Node.js, npm, git 등 Linux 네이티브 도구 활용
+- 필요시 Windows 파일 시스템 접근: `/mnt/c/`, `/mnt/d/` 경로 사용
 
 개발 프로세스 전반에 걸쳐 엘론 머스크의 효율성 원칙을 지속적으로 적용하고, 플래닝 포커 게임의 핵심 목적인 "팀의 효율적인 스토리 포인트 추정"에 집중하세요. 

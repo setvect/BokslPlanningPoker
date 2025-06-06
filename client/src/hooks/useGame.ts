@@ -96,41 +96,71 @@ export function useGame() {
     }
   }, [socket, setLoading, clearError]);
 
-  // 카드 선택
+  // 카드 선택 (Optimistic Update)
   const selectCard = useCallback(async (card: PlanningPokerCard) => {
     if (!gameState.room || !gameState.currentUser) {
       throw new Error('방에 참여하지 않았습니다');
     }
 
-    try {
-      setLoading(true);
-      clearError();
+    const previousCard = gameState.currentUser.selectedCard;
 
+    try {
+      // 1. 즉시 로컬 상태 업데이트 (리렌더링 없이)
+      setGameState(prev => {
+        if (!prev.room || !prev.currentUser) return prev;
+        
+        const updatedUser = { ...prev.currentUser, selectedCard: card };
+        const updatedUsers = prev.room.users.map(user => 
+          user.id === prev.currentUser!.id ? updatedUser : user
+        );
+
+        return {
+          ...prev,
+          currentUser: updatedUser,
+          room: {
+            ...prev.room,
+            users: updatedUsers
+          }
+        };
+      });
+
+      // 2. 서버에 요청 전송 (백그라운드)
       const response = await socket.selectCard({ 
         roomId: gameState.room.id, 
         card 
       });
       
-      // 서버에서 result를 받았다면 (공개 상태에서 카드 변경) 즉시 업데이트
+      // 3. 공개 상태에서 카드 변경 시 게임 결과 업데이트
       if (response.result) {
         setGameState(prev => ({
           ...prev,
-          gameResult: response.result || null,
-          loading: false
+          gameResult: response.result || null
         }));
       }
       
-      setLoading(false);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '카드 선택에 실패했습니다';
-      setGameState(prev => ({
-        ...prev,
-        loading: false,
-        error: errorMessage
-      }));
+      // 4. 실패 시 이전 상태로 롤백
+      setGameState(prev => {
+        if (!prev.room || !prev.currentUser) return prev;
+        
+        const revertedUser = { ...prev.currentUser, selectedCard: previousCard };
+        const revertedUsers = prev.room.users.map(user => 
+          user.id === prev.currentUser!.id ? revertedUser : user
+        );
+
+        return {
+          ...prev,
+          currentUser: revertedUser,
+          room: {
+            ...prev.room,
+            users: revertedUsers
+          },
+          error: error instanceof Error ? error.message : '카드 선택에 실패했습니다'
+        };
+      });
       throw error;
     }
-  }, [gameState.room, gameState.currentUser, socket, setLoading, clearError]);
+  }, [gameState.room, gameState.currentUser, socket]);
 
   // 카드 공개
   const revealCards = useCallback(async () => {
@@ -305,14 +335,21 @@ export function useGame() {
       })
     );
 
-    // 사용자 업데이트 (카드 선택 등)
+    // 사용자 업데이트 (카드 선택 등) - 본인 카드 선택은 제외
     unsubscribers.push(
       socket.onUserUpdate((data) => {
         console.log('사용자 업데이트:', data.action, data.user.name);
         setGameState(prev => {
           if (!prev.room) return prev;
 
-          // 방의 사용자 목록 업데이트
+          // 본인의 카드 선택 업데이트는 무시 (이미 Optimistic Update로 처리됨)
+          const isMyCardSelection = prev.currentUser?.id === data.user.id && data.action === 'card_selected';
+          if (isMyCardSelection) {
+            console.log('본인 카드 선택 업데이트 무시:', data.user.name, data.user.selectedCard);
+            return prev;
+          }
+
+          // 다른 사용자의 업데이트만 처리
           const updatedUsers = prev.room.users.map(user => 
             user.id === data.user.id ? data.user : user
           );
@@ -323,9 +360,9 @@ export function useGame() {
               ...prev.room,
               users: updatedUsers
             },
-            // 현재 사용자 정보 업데이트
+            // 본인이 아닌 경우에만 currentUser 업데이트
             currentUser: prev.currentUser?.id === data.user.id 
-              ? data.user 
+              ? prev.currentUser // 본인은 그대로 유지
               : prev.currentUser
           };
         });

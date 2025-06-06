@@ -1,0 +1,46 @@
+# docker-compose.prod.yml - 프로덕션 배포용
+version: '3.8'
+
+services:
+  planning-poker:
+    image: setvect/boksl-planning-poker:latest  # Registry에서 이미지 pull
+    container_name: planning-poker-prod
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    restart: unless-stopped
+    
+    # 헬스체크
+    healthcheck:
+      test: ["CMD", "node", "healthcheck.js"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    # 로그 관리
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    
+    # 리소스 제한
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+
+networks:
+  default:
+    name: planning-poker-network
+
+# 볼륨 (필요시 데이터 저장용)
+volumes:
+  app-data: 

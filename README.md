@@ -166,10 +166,13 @@ BokslPlanningPoker/
 ├── scripts/         # 빌드 및 배포 스크립트
 │   ├── build.sh           # Docker 빌드 스크립트
 │   ├── dev.sh             # 개발 환경 실행 스크립트
+│   ├── deploy-dockerhub.sh # Docker Hub 온라인 배포 스크립트
+│   ├── deploy-offline.sh  # 오프라인 배포 패키지 생성 스크립트
 │   └── check-docker.sh    # Docker 환경 확인 스크립트
 ├── docs/            # 프로젝트 문서
 ├── Dockerfile       # Docker 빌드 설정
-├── docker-compose.yml     # Docker Compose 설정
+├── docker-compose.yml     # Docker Compose 설정 (개발/프로덕션)
+├── docker-compose.offline.yml # 오프라인 배포용 설정
 ├── healthcheck.js   # 컨테이너 헬스체크
 └── .dockerignore    # Docker 빌드 제외 파일
 ```
@@ -208,7 +211,9 @@ BokslPlanningPoker/
    newgrp docker
    ```
 
-### 6.1. 프로덕션 배포
+### 6.1. 프로덕션 배포 (인터넷 연결 환경)
+
+#### **A. 로컬 빌드 방식**
 
 ```bash
 # 1. Docker 이미지 빌드
@@ -225,7 +230,70 @@ docker run -d \
 docker-compose up -d
 ```
 
-### 6.2. 개발 환경
+#### **B. Docker Hub 방식 (권장)**
+
+```bash
+# 1. Docker Hub 로그인
+docker login
+
+# 2. 자동화 스크립트로 빌드 및 업로드
+./scripts/deploy-dockerhub.sh YOUR_DOCKERHUB_USERNAME v1.0.0
+
+# 3. 원격 서버에서 바로 실행
+docker run -d -p 3000:3000 --name planning-poker YOUR_DOCKERHUB_USERNAME/boksl-planning-poker:v1.0.0
+
+# 4. 또는 생성된 배포 스크립트 사용
+scp deploy-to-server.sh user@server:~/
+ssh user@server './deploy-to-server.sh'
+```
+
+### 6.2. 오프라인 배포
+
+**Docker Hub 없이 배포하는 방법:**
+
+#### **A. 자동화 스크립트 사용 (권장)**
+
+```bash
+# 1. 배포 패키지 생성
+./scripts/deploy-offline.sh v1.0.0
+
+# 2. docker-images/ 폴더를 대상 서버로 전송
+scp -r docker-images/ user@offline-server:/opt/planning-poker/
+
+# 3. 대상 서버에서 설치 실행
+ssh user@offline-server 'cd /opt/planning-poker && ./install.sh'
+```
+
+#### **B. 수동 배포**
+
+```bash
+# 1. 로컬에서 이미지 빌드 및 저장
+docker build -t boksl-planning-poker:v1.0.0 .
+docker save -o planning-poker.tar boksl-planning-poker:v1.0.0
+gzip planning-poker.tar
+
+# 2. 파일 전송 (USB, scp, 물리적 매체 등)
+scp planning-poker.tar.gz user@offline-server:/tmp/
+
+# 3. 대상 서버에서 이미지 로드 및 실행
+ssh user@offline-server
+gunzip -c /tmp/planning-poker.tar.gz | docker load
+docker run -d -p 3000:3000 --name planning-poker boksl-planning-poker:v1.0.0
+```
+
+#### **C. USB 드라이브 활용**
+
+```bash
+# 1. USB 마운트 후 이미지 저장
+mount /dev/sdb1 /media/usb
+docker save boksl-planning-poker:v1.0.0 | gzip > /media/usb/planning-poker.tar.gz
+
+# 2. 대상 서버에서 USB 마운트 후 로드
+mount /dev/sdb1 /media/usb
+gunzip -c /media/usb/planning-poker.tar.gz | docker load
+```
+
+### 6.3. 개발 환경
 
 ```bash
 # 개발 환경 실행 (핫 리로드 지원)
@@ -235,7 +303,7 @@ docker-compose up -d
 docker-compose --profile dev up --build
 ```
 
-### 6.3. 모니터링
+### 6.4. 모니터링
 
 ```bash
 # 컨테이너 상태 확인

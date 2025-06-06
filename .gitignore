@@ -125,3 +125,5 @@ server/dist/
 # Client build output  
 client/dist/
 client/build/ 
+
+docker-images/

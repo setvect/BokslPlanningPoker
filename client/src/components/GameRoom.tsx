@@ -147,12 +147,12 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
     }
   };
 
-  // 바둑판식 그리드 컬럼 수 계산
+  // 바둑판식 그리드 컬럼 수 계산 (반응형)
   const getGridColumns = (total: number) => {
+    // 모바일: 최대 4열로 제한 (가로 스크롤 방지)
     if (total <= 4) return 2;      // 2x2
     if (total <= 9) return 3;      // 3x3
-    if (total <= 12) return 4;     // 4x3 (12명까지)
-    return 5;                      // 5열 (13명부터)
+    return 4;                      // 4열 (10명부터 모두 4열로 제한)
   };
 
   const gridColumns = getGridColumns(totalUsers);

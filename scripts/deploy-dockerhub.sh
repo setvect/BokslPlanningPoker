@@ -13,6 +13,7 @@ NC='\033[0m'
 # 설정
 DOCKERHUB_USERNAME=${1:-""}
 VERSION=${2:-"latest"}
+SKIP_LOGIN_CHECK=${3:-"false"}
 IMAGE_NAME="boksl-planning-poker"
 FULL_IMAGE_NAME="${DOCKERHUB_USERNAME}/${IMAGE_NAME}"
 
@@ -39,15 +40,17 @@ print_info() {
 # 사용법 표시
 show_usage() {
     echo -e "${YELLOW}사용법:${NC}"
-    echo "  $0 <dockerhub-username> [version]"
+    echo "  $0 <dockerhub-username> [version] [skip-login-check]"
     echo ""
     echo -e "${YELLOW}예시:${NC}"
     echo "  $0 setvect latest"
     echo "  $0 setvect v1.0.0"
+    echo "  $0 setvect v1.0.0 true    # 로그인 확인 생략"
     echo ""
     echo -e "${YELLOW}참고:${NC}"
     echo "  - Docker Hub에 가입하고 로그인이 필요합니다"
     echo "  - docker login 명령어로 먼저 로그인하세요"
+    echo "  - 로그인 확인에 문제가 있으면 세 번째 파라미터에 'true' 입력"
 }
 
 # 파라미터 확인
@@ -63,13 +66,46 @@ echo -e "${BLUE}🐳 이미지: ${FULL_IMAGE_NAME}:${VERSION}${NC}"
 echo ""
 
 # Docker 로그인 확인
-print_step "1. Docker Hub 로그인 상태 확인..."
-if ! docker info | grep -q "Username:"; then
-    print_warning "Docker Hub에 로그인되어 있지 않습니다."
-    print_info "다음 명령어로 로그인하세요: docker login"
-    exit 1
+if [ "$SKIP_LOGIN_CHECK" = "true" ]; then
+    print_warning "로그인 확인을 생략합니다. (사용자 요청)"
+else
+    print_step "1. Docker Hub 로그인 상태 확인..."
+    
+    # 여러 방법으로 로그인 상태 확인
+    LOGIN_CHECK_PASSED=false
+    
+    # 방법 1: docker info에서 Username 찾기
+    if docker info 2>/dev/null | grep -q "Username:"; then
+        LOGIN_CHECK_PASSED=true
+    fi
+    
+    # 방법 2: docker system info에서 Username 찾기 
+    if [ "$LOGIN_CHECK_PASSED" = false ] && docker system info 2>/dev/null | grep -q -i "username"; then
+        LOGIN_CHECK_PASSED=true
+    fi
+    
+    # 방법 3: Docker Hub에 실제 접근 테스트 (hello-world 이미지로 테스트)
+    if [ "$LOGIN_CHECK_PASSED" = false ]; then
+        print_step "   실제 Docker Hub 접근 테스트 중..."
+        if echo "FROM hello-world" | docker build -t ${DOCKERHUB_USERNAME}/test-login:temp - >/dev/null 2>&1; then
+            if docker push ${DOCKERHUB_USERNAME}/test-login:temp >/dev/null 2>&1; then
+                LOGIN_CHECK_PASSED=true
+                # 테스트 이미지 정리
+                docker rmi ${DOCKERHUB_USERNAME}/test-login:temp >/dev/null 2>&1 || true
+            fi
+        fi
+    fi
+    
+    if [ "$LOGIN_CHECK_PASSED" = false ]; then
+        print_warning "Docker Hub에 로그인되어 있지 않거나 접근할 수 없습니다."
+        print_info "다음 명령어로 로그인하세요: docker login"
+        print_info "또는 Docker Hub 사용자명이 올바른지 확인하세요."
+        print_info "로그인 확인을 생략하려면: $0 $DOCKERHUB_USERNAME $VERSION true"
+        exit 1
+    fi
+    
+    print_success "Docker Hub 로그인 확인됨"
 fi
-print_success "Docker Hub 로그인 확인됨"
 
 # 이미지 빌드
 print_step "2. Docker 이미지 빌드 중..."

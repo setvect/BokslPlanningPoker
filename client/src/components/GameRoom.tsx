@@ -4,6 +4,7 @@ import GameResult from './GameResult';
 import CardSelectionModal from './CardSelectionModal';
 import { useState } from 'react';
 import { FaCoffee } from 'react-icons/fa';
+import { STORAGE_KEYS } from '../../../shared/constants';
 
 interface GameRoomProps {
   roomId: string
@@ -86,6 +87,14 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
 
     try {
       await game.updateUserName(editingName.trim());
+      
+      // 로컬 스토리지에도 변경된 이름 저장
+      try {
+        localStorage.setItem(STORAGE_KEYS.USER_NAME, editingName.trim());
+      } catch (error) {
+        console.warn('로컬 스토리지 저장 실패:', error);
+      }
+      
       setIsEditingName(false);
       setEditingName('');
     } catch (error) {
@@ -282,7 +291,7 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
                           onKeyDown={handleNameKeyPress}
                           onBlur={finishEditingName}
                           className="bg-white dark:bg-dark-700 border border-gray-300 dark:border-dark-600 rounded px-2 py-1 text-sm text-center w-20 max-w-full text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
-                          maxLength={20}
+                          maxLength={7}
                           autoFocus
                         />
                         <div className="flex gap-1">
@@ -302,12 +311,12 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
                         </div>
                       </div>
                     ) : (
-                      <div className="relative group">
+                      <div className="relative group flex items-center justify-center gap-1">
                         <span>{user.name}</span>
                         {isCurrentUser && (
                           <button
                             onClick={startEditingName}
-                            className="absolute -right-5 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400"
+                            className="ml-1 opacity-70 group-hover:opacity-100 transition-opacity text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400 text-sm"
                             title="이름 편집"
                             disabled={game.loading}
                           >

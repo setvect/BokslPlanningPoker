@@ -68,7 +68,7 @@ export default function JoinRoom({ roomId, roomName, onBack, onJoin, error, load
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
                 className="input"
-                maxLength={20}
+                maxLength={7}
                 required
                 autoFocus
                 disabled={loading}

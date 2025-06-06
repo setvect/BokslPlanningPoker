@@ -323,7 +323,7 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
           </div>
 
           {/* 중앙 액션 버튼 */}
-          <div className="mb-4">
+          <div className="mb-3">
             {currentRoom?.gameState === 'selecting' ? (
               <button 
                 className={`px-6 py-3 text-base font-semibold bg-success-600 dark:bg-success-700 text-white rounded-lg shadow-md hover:bg-success-700 dark:hover:bg-success-600 transition-colors ${!game.canRevealCards || game.loading ? 'opacity-50 cursor-not-allowed' : ''}`}
@@ -344,8 +344,8 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
           </div>
         </div>
 
-        {/* 하단 영역: 게임 결과 (공개 후) - 패딩 최적화 */}
-        <div className="bg-white dark:bg-dark-800 rounded-xl p-4 shadow-lg min-h-[280px] flex flex-col border border-gray-200 dark:border-dark-600">
+        {/* 하단 영역: 게임 결과 (공개 후) 또는 카드 선택 - 여백 최적화 */}
+        <div className="bg-white dark:bg-dark-800 rounded-xl p-3 shadow-lg min-h-[180px] flex flex-col border border-gray-200 dark:border-dark-600">
           {/* 게임 결과 우선 표시 (공개 후) */}
           {game.gameResult && currentRoom?.gameState === 'revealed' ? (
             <div className="flex-1 flex flex-col justify-center">
@@ -357,62 +357,49 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
             </div>
           ) : (
             /* 카드 선택 영역 (선택 중 또는 기본) */
-            <div className="flex-1 flex flex-col">
-              {/* 카드 선택 덱 - 여백 최소화 */}
-              <div className="text-center mb-2">
-                <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-0.5">
-                  스토리 포인트 선택
-                </h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  원하는 포인트 카드를 선택하세요
-                </p>
-              </div>
-              
-              {/* 카드 선택 영역 - 통합 반응형 */}
-              <div className="flex-1 flex flex-col justify-center">
-                <div className="flex gap-1 sm:gap-2 justify-center flex-wrap max-w-full px-1">
-                  {cards.map((card) => {
-                    const isSelected = game.isCardSelected(card);
-                    const isDisabled = game.loading || !currentRoom;
-                    
-                    return (
-                      <button
-                        key={card}
-                        className={`planning-card flex-shrink-0 
-                          w-9 min-h-[2.75rem]
-                          sm:w-11 sm:min-h-[3.25rem]
-                          md:w-12 md:min-h-[3.5rem]
-                          lg:w-14 lg:min-h-[4rem]
-                          xl:w-16 xl:min-h-[4.5rem]
-                          ${isSelected ? 'selected' : ''} ${getCardSpecialClass(card)} ${
-                          game.loading && isSelected ? 'animate-pulse-soft' : ''
-                        }`}
-                        onClick={() => game.selectCard(card)}
-                        disabled={isDisabled}
-                        title={isDisabled ? 
-                          `현재 선택할 수 없습니다` : 
-                          `${card} 포인트 선택`
-                        }
-                      >
-                        <span className="planning-card-content 
-                          text-sm
-                          sm:text-sm
-                          md:text-base
-                          lg:text-lg
-                          xl:text-xl">
-                          {renderCardContent(card)}
-                        </span>
-                        {isSelected && (
-                          <div className="absolute inset-0 flex items-center justify-center bg-primary-500 bg-opacity-20 rounded-xl">
-                            <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-4 md:h-4 lg:w-5 lg:h-5 xl:w-6 xl:h-6 border-2 border-primary-600 rounded-full flex items-center justify-center">
-                              <div className="w-1 h-1 sm:w-1 sm:h-1 md:w-1.5 md:h-1.5 lg:w-2 lg:h-2 xl:w-2.5 xl:h-2.5 bg-primary-600 rounded-full"></div>
-                            </div>
+            <div className="flex-1 flex flex-col justify-center">
+              <div className="flex gap-1 sm:gap-2 justify-center flex-wrap max-w-full px-1">
+                {cards.map((card) => {
+                  const isSelected = game.isCardSelected(card);
+                  const isDisabled = game.loading || !currentRoom;
+                  
+                  return (
+                    <button
+                      key={card}
+                      className={`planning-card flex-shrink-0 
+                        w-9 min-h-[2.75rem]
+                        sm:w-11 sm:min-h-[3.25rem]
+                        md:w-12 md:min-h-[3.5rem]
+                        lg:w-14 lg:min-h-[4rem]
+                        xl:w-16 xl:min-h-[4.5rem]
+                        ${isSelected ? 'selected' : ''} ${getCardSpecialClass(card)} ${
+                        game.loading && isSelected ? 'animate-pulse-soft' : ''
+                      }`}
+                      onClick={() => game.selectCard(card)}
+                      disabled={isDisabled}
+                      title={isDisabled ? 
+                        `현재 선택할 수 없습니다` : 
+                        `${card} 포인트 선택`
+                      }
+                    >
+                      <span className="planning-card-content 
+                        text-sm
+                        sm:text-sm
+                        md:text-base
+                        lg:text-lg
+                        xl:text-xl">
+                        {renderCardContent(card)}
+                      </span>
+                      {isSelected && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-primary-500 bg-opacity-20 rounded-xl">
+                          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-4 md:h-4 lg:w-5 lg:h-5 xl:w-6 xl:h-6 border-2 border-primary-600 rounded-full flex items-center justify-center">
+                            <div className="w-1 h-1 sm:w-1 sm:h-1 md:w-1.5 md:h-1.5 lg:w-2 lg:h-2 xl:w-2.5 xl:h-2.5 bg-primary-600 rounded-full"></div>
                           </div>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}

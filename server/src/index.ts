@@ -5,13 +5,30 @@ import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import path from 'path';
+import fs from 'fs';
 import { setupSocketHandlers } from './socket/handlers';
 import { GAME_CONFIG } from '../../shared';
 
 // 환경 변수 설정
 const PORT = process.env.PORT || 3001;
 const NODE_ENV = process.env.NODE_ENV || 'development';
-const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:5173';
+
+// CORS 설정 - 환경에 따라 동적으로 설정
+const getCorsOrigins = () => {
+  if (NODE_ENV === 'production') {
+    // 프로덕션: 현재 서버 주소와 일반적인 포트들
+    return [
+      `http://localhost:${PORT}`,
+      `https://localhost:${PORT}`,
+      // 추가적인 도메인이 있다면 여기에 추가
+    ];
+  } else {
+    // 개발: 개발 서버들
+    return ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:3001'];
+  }
+};
+
+const corsOrigins = getCorsOrigins();
 
 // Express 앱 생성
 const app = express();
@@ -20,7 +37,7 @@ const server = createServer(app);
 // Socket.IO 서버 생성
 const io = new Server(server, {
   cors: {
-    origin: ['http://localhost:5173', 'http://localhost:3000'],
+    origin: corsOrigins,
     methods: ['GET', 'POST'],
     credentials: true
   },
@@ -33,19 +50,18 @@ app.use(helmet({
 }));
 app.use(compression());
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:3000'],
+  origin: corsOrigins,
   credentials: true
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 정적 파일 서빙 (프로덕션 환경에서만)
-if (NODE_ENV === 'production') {
-  const clientBuildPath = path.join(__dirname, '../../client/dist');
-  console.log(`📁 정적 파일 서빙 경로: ${clientBuildPath}`);
+// 정적 파일 서빙
+const clientBuildPath = path.join(process.cwd(), '../client/dist');
+
+if (fs.existsSync(clientBuildPath)) {
+  console.log(`📁 클라이언트 파일 서빙: ${clientBuildPath}`);
   app.use(express.static(clientBuildPath));
-} else {
-  console.log(`🔧 개발 모드: 정적 파일 서빙 비활성화`);
 }
 
 // API 라우트
@@ -72,19 +88,18 @@ app.get('/api/stats', (req, res) => {
   });
 });
 
-// SPA 라우팅 지원 (프로덕션 환경에서만)
-if (NODE_ENV === 'production') {
+// SPA 라우팅 지원
+if (fs.existsSync(path.join(clientBuildPath, 'index.html'))) {
   app.get('*', (req, res) => {
-    const clientBuildPath = path.join(__dirname, '../../client/dist');
-    res.sendFile(path.join(clientBuildPath, 'index.html'));
+    if (!req.path.startsWith('/api') && !req.path.startsWith('/health')) {
+      res.sendFile(path.join(clientBuildPath, 'index.html'));
+    }
   });
 } else {
-  // 개발 환경에서는 기본 응답
   app.get('/', (req, res) => {
     res.json({ 
       message: '플래닝 포커 API 서버',
-      environment: 'development',
-      frontend: 'http://localhost:5173에서 실행 중',
+      environment: NODE_ENV,
       health: '/health',
       stats: '/api/stats'
     });
@@ -113,6 +128,8 @@ server.listen(PORT, () => {
   console.log(`📍 주소: http://localhost:${PORT}`);
   console.log(`🏠 헬스체크: http://localhost:${PORT}/health`);
   console.log(`📊 통계: http://localhost:${PORT}/api/stats`);
+  console.log(`🌍 환경: ${NODE_ENV}`);
+  console.log(`🔗 CORS 허용 origins:`, corsOrigins);
   console.log(`🎮 최대 방 개수: ${GAME_CONFIG.MAX_ROOMS}`);
   console.log(`👥 방당 최대 인원: ${GAME_CONFIG.MAX_USERS_PER_ROOM}`);
 });

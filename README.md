@@ -168,6 +168,7 @@ BokslPlanningPoker/
 │   ├── dev.sh             # 개발 환경 실행 스크립트
 │   ├── deploy-dockerhub.sh # Docker Hub 온라인 배포 스크립트
 │   ├── deploy-offline.sh  # 오프라인 배포 패키지 생성 스크립트
+│   ├── install-docker.sh  # Linux 서버 Docker 설치 스크립트
 │   └── check-docker.sh    # Docker 환경 확인 스크립트
 ├── docs/            # 프로젝트 문서
 ├── Dockerfile       # Docker 빌드 설정
@@ -179,7 +180,9 @@ BokslPlanningPoker/
 
 ## 6. 🐳 Docker 배포
 
-### 6.0. Docker 설정 (WSL2 환경)
+### 6.0. Docker 설정
+
+#### **A. WSL2 환경 (개발용)**
 
 **WSL2에서 Docker 명령어가 인식되지 않는 경우:**
 
@@ -202,14 +205,70 @@ BokslPlanningPoker/
    ./scripts/check-docker.sh
    ```
 
-3. **대안: WSL 내 직접 설치**
+#### **B. Linux 서버 환경 (배포용)**
+
+**원격 Ubuntu 서버에 Docker 설치:**
+
+1. **자동 설치 스크립트 사용 (권장)**
    ```bash
-   # Docker Engine 설치
+   # 스크립트를 서버로 전송
+   scp scripts/install-docker.sh user@server:~/
+   
+   # 서버에서 실행
+   ssh user@server
+   chmod +x install-docker.sh
+   ./install-docker.sh
+   ```
+
+2. **수동 설치 (빠른 방법)**
+   ```bash
+   # 시스템 업데이트
+   sudo apt update
+   
+   # Docker 공식 설치 스크립트
    curl -fsSL https://get.docker.com -o get-docker.sh
    sudo sh get-docker.sh
+   
+   # 사용자 권한 설정
+   sudo usermod -aG docker $USER
+   newgrp docker
+   
+   # 설치 확인
+   docker --version
+   docker run hello-world
+   ```
+
+3. **APT 패키지 매니저 사용**
+   ```bash
+   sudo apt update
+   sudo apt install -y docker.io docker-compose
+   sudo systemctl start docker
+   sudo systemctl enable docker
    sudo usermod -aG docker $USER
    newgrp docker
    ```
+
+#### **C. sudo 권한 관리**
+
+**Docker 설치 후 sudo 없이 사용하기:**
+
+```bash
+# 문제: sudo가 필요함
+sudo docker run hello-world  # ✅ 작동
+docker run hello-world       # ❌ 권한 오류
+
+# 해결: docker 그룹에 사용자 추가
+sudo usermod -aG docker $USER
+
+# 권한 적용 (다음 중 하나 선택)
+newgrp docker                # 1️⃣ 즉시 적용
+# 또는 새 터미널 열기        # 2️⃣ 터미널 재시작  
+# 또는 재로그인             # 3️⃣ SSH 재접속
+
+# 확인
+docker run hello-world       # ✅ sudo 없이 작동
+groups                       # docker 그룹 포함 확인
+```
 
 ### 6.1. 프로덕션 배포 (인터넷 연결 환경)
 

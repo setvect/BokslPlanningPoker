@@ -227,6 +227,7 @@ io.to(roomId).emit('room_update', {
 - Graceful degradation (실시간 기능 실패 시 폴백)
 
 ## 21. 터미널 명령어 (WSL 기반)
+- 터미널 명령은 직접 실행하지 말고 안내만 해줘. 내가 직접 실행할게.
 - WSL Ubuntu 터미널을 기본으로 사용
 - Linux 명령어 사용 (`rm`, `cp`, `mv`, `ls`, `grep` 등)
 - Bash 스크립트 작성 및 실행

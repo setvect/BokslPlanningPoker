@@ -46,7 +46,15 @@ const io = new Server(server, {
 
 // 미들웨어 설정
 app.use(helmet({
-  contentSecurityPolicy: false
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+    },
+  },
 }));
 app.use(compression());
 app.use(cors({
@@ -57,11 +65,26 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // 정적 파일 서빙
-const clientBuildPath = path.join(process.cwd(), '../client/dist');
+const clientBuildPath = NODE_ENV === 'production' 
+  ? path.join(process.cwd(), 'public')  // Docker 환경
+  : path.join(process.cwd(), '../client/dist');  // 로컬 개발 환경
+
+console.log(`📁 클라이언트 파일 경로 확인: ${clientBuildPath}`);
+console.log(`📁 경로 존재 여부: ${fs.existsSync(clientBuildPath)}`);
 
 if (fs.existsSync(clientBuildPath)) {
   console.log(`📁 클라이언트 파일 서빙: ${clientBuildPath}`);
-  app.use(express.static(clientBuildPath));
+  app.use(express.static(clientBuildPath, {
+    setHeaders: (res, path) => {
+      if (path.endsWith('.css')) {
+        res.setHeader('Content-Type', 'text/css');
+      } else if (path.endsWith('.js')) {
+        res.setHeader('Content-Type', 'text/javascript');
+      }
+    }
+  }));
+} else {
+  console.log(`❌ 클라이언트 파일을 찾을 수 없습니다: ${clientBuildPath}`);
 }
 
 // API 라우트
@@ -89,10 +112,15 @@ app.get('/api/stats', (req, res) => {
 });
 
 // SPA 라우팅 지원
-if (fs.existsSync(path.join(clientBuildPath, 'index.html'))) {
+const indexPath = path.join(clientBuildPath, 'index.html');
+console.log(`📁 index.html 경로: ${indexPath}`);
+console.log(`📁 index.html 존재 여부: ${fs.existsSync(indexPath)}`);
+
+if (fs.existsSync(indexPath)) {
   app.get('*', (req, res) => {
     if (!req.path.startsWith('/api') && !req.path.startsWith('/health')) {
-      res.sendFile(path.join(clientBuildPath, 'index.html'));
+      console.log(`📄 SPA 라우팅: ${req.path} -> index.html`);
+      res.sendFile(indexPath);
     }
   });
 } else {

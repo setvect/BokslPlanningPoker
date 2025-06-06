@@ -31,7 +31,14 @@ export function useSocket(options: UseSocketOptions = {}) {
   // 환경에 따른 Socket URL 결정
   const getSocketUrl = () => {
     const isDevelopment = window.location.hostname === 'localhost';
-    return isDevelopment ? CLIENT_CONFIG.DEVELOPMENT_SOCKET_URL : window.location.origin;
+    
+    if (isDevelopment) {
+      // 개발 환경: 현재 페이지와 같은 포트 사용
+      return `http://${window.location.hostname}:${window.location.port}`;
+    } else {
+      // 프로덕션 환경: 현재 origin 사용
+      return window.location.origin;
+    }
   };
   
   const { autoConnect = true, url = getSocketUrl() } = options;

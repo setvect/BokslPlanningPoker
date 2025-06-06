@@ -1,0 +1,57 @@
+# docker-compose.yml - Planning Poker Application
+version: '3.8'
+
+services:
+  # 프로덕션 서비스
+  planning-poker:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "healthcheck.js"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # 개발 환경 서비스
+  planning-poker-dev:
+    profiles: ["dev"]
+    build:
+      context: .
+      target: server-builder
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+    volumes:
+      - ./server/src:/app/server/src
+      - ./shared:/app/shared
+    command: ["npm", "run", "dev"]
+    restart: unless-stopped
+
+  # 클라이언트 개발 서버 (별도 실행)
+  client-dev:
+    profiles: ["dev"]
+    build:
+      context: ./client
+      dockerfile: ../docker/Dockerfile.client-dev
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./client/src:/app/src
+      - ./shared:/app/shared
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://localhost:3001
+    command: ["npm", "run", "dev"]
+    restart: unless-stopped
+
+networks:
+  default:
+    name: planning-poker-network 

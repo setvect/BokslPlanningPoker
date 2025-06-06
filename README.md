@@ -88,6 +88,24 @@ npm run build
 npm start
 ```
 
+### 4.3. 개발 도구 및 스크립트
+
+```bash
+# 타입 검사
+cd client && npm run type-check && cd ..
+cd server && npm run type-check && cd ..
+
+# 코드 품질 검사 (ESLint)
+cd client && npm run lint && cd ..
+cd server && npm run lint && cd ..
+
+# 전체 프로젝트 빌드 (한 번에)
+(cd client && npm run build) && (cd server && npm run build)
+
+# 전체 설치 및 빌드 (처음 설정 시)
+(cd client && npm install && npm run build) && (cd server && npm install && npm run build)
+```
+
 ## 5. 📁 프로젝트 구조
 
 ```
@@ -123,54 +141,11 @@ BokslPlanningPoker/
 - [기술 스택 상세](./docs/기술스택.md)
 - [구현 단계](./docs/구현단계.md)
 
-## 7. 🔧 개발
-
-### 7.1. 빌드 스크립트
-
-```bash
-# 클라이언트 빌드
-cd client && npm run build && cd ..
-
-# 서버 빌드
-cd server && npm run build && cd ..
-
-# 타입 검사
-cd client && npm run type-check && cd ..
-cd server && npm run type-check && cd ..
-
-# 코드 품질 검사 (ESLint)
-cd client && npm run lint && cd ..
-cd server && npm run lint && cd ..
-
-# 전체 프로젝트 빌드 (한 번에)
-(cd client && npm run build) && (cd server && npm run build)
-```
-
-## 8. 🐳 Docker 이미지 빌드
-
-### 8.1. 개별 프로젝트 빌드
-
-```bash
-# 클라이언트 빌드
-cd client
-npm install
-npm run build
-cd ..
-
-# 서버 빌드
-cd server
-npm install
-npm run build
-cd ..
-
-# 또는 한 번에 실행
-(cd client && npm install && npm run build) && (cd server && npm install && npm run build)
-```
-## 9. 📝 라이선스
+## 7. 📝 라이선스
 
 MIT License - 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
 
-## 10. 🤝 지원
+## 8. 🤝 지원
 
 문제가 있거나 기능 제안이 있으시면 [Issues](../../issues)를 열어주세요.
 

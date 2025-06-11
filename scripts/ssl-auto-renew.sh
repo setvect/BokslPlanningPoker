@@ -13,7 +13,7 @@ log_message() {
 log_message "=== SSL 인증서 갱신 시작 ==="
 
 # 갱신 전 인증서 만료일 확인
-EXPIRY_DATE=$(sudo openssl x509 -enddate -noout -in /etc/letsencrypt/live/poker.boksl.com/fullchain.pem | cut -d= -f2)
+EXPIRY_DATE=$(sudo openssl x509 -enddate -noout -in /etc/letsencrypt/live/poker.example.com/fullchain.pem | cut -d= -f2)
 log_message "현재 인증서 만료일: $EXPIRY_DATE"
 
 # 갱신 시도
@@ -38,7 +38,7 @@ if sudo /usr/bin/certbot renew --quiet; then
     fi
     
     # 갱신 후 인증서 만료일 확인
-    NEW_EXPIRY_DATE=$(sudo openssl x509 -enddate -noout -in /etc/letsencrypt/live/poker.boksl.com/fullchain.pem | cut -d= -f2)
+    NEW_EXPIRY_DATE=$(sudo openssl x509 -enddate -noout -in /etc/letsencrypt/live/poker.example.com/fullchain.pem | cut -d= -f2)
     log_message "갱신 후 인증서 만료일: $NEW_EXPIRY_DATE"
     
     # 컨테이너 상태 확인
@@ -49,7 +49,7 @@ if sudo /usr/bin/certbot renew --quiet; then
     fi
     
     # 웹사이트 접근 테스트
-    if curl -f -s https://poker.boksl.com > /dev/null; then
+    if curl -f -s https://poker.example.com > /dev/null; then
         log_message "✅ 웹사이트 HTTPS 접근 성공"
     else
         log_message "⚠️ 웹사이트 HTTPS 접근 실패"
@@ -59,7 +59,7 @@ else
     log_message "❌ 인증서 갱신 실패"
     
     # 실패 시 알림 (선택사항)
-    # echo "SSL 인증서 갱신 실패: poker.boksl.com" | mail -s "SSL 갱신 실패" admin@example.com
+    # echo "SSL 인증서 갱신 실패: poker.example.com" | mail -s "SSL 갱신 실패" webmaster@example.com
     
     exit 1
 fi

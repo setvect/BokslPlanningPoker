@@ -388,6 +388,141 @@ docker exec -it planning-poker sh
 docker stats planning-poker
 ```
 
+### 6.5. nginx + SSL 설정 (프로덕션 환경)
+
+**🎯 목적**: nginx 리버스 프록시와 Let's Encrypt SSL 인증서를 통한 HTTPS 서비스 제공
+
+#### **A. 자동 nginx + SSL 설정**
+
+```bash
+# 1. 도메인과 이메일로 자동 설정
+./scripts/setup-nginx-ssl.sh your-domain.com admin@your-domain.com
+
+# 예시
+./scripts/setup-nginx-ssl.sh poker.example.com webmaster@example.com
+```
+
+**📋 setup-nginx-ssl.sh가 자동으로 수행하는 작업**:
+
+1. **nginx 설치 및 리버스 프록시 설정**
+   - Docker 컨테이너(`localhost:3000`)로 프록시 연결
+   - 웹소켓(Socket.io) 지원 설정
+
+2. **Let's Encrypt SSL 인증서 발급**
+   - 무료 SSL 인증서 자동 발급
+   - nginx SSL 설정 자동 적용
+
+3. **보안 설정**
+   - HTTP → HTTPS 자동 리다이렉트
+   - 보안 헤더 추가 (HSTS, XSS 보호 등)
+
+4. **방화벽 및 자동 갱신 설정**
+   - nginx 포트 허용 (80, 443)
+   - SSL 인증서 자동 갱신 cron 설정
+
+#### **B. SSL 인증서 자동 갱신**
+
+```bash
+# 수동 갱신 테스트
+sudo certbot renew --dry-run
+
+# 갱신 로그 확인
+./scripts/ssl-auto-renew.sh
+```
+
+**📋 ssl-auto-renew.sh 기능**:
+
+- **인증서 만료일 확인**: 현재 및 갱신 후 만료일 로깅
+- **자동 갱신 실행**: certbot으로 인증서 갱신
+- **서비스 재시작**: nginx 설정 검증 및 재로드
+- **상태 확인**: Docker 컨테이너 및 HTTPS 접근 테스트
+- **로그 기록**: `/var/log/ssl-renew.log`에 상세 로그 저장
+
+#### **C. 아키텍처 구조**
+
+```
+인터넷 → nginx (SSL 터미네이션) → Docker 컨테이너 (복슬 플래닝 포커)
+         ↓
+    80 → 443 리다이렉트 (HTTP → HTTPS)
+    443 → localhost:3000 프록시 (nginx → Docker)
+```
+
+**🌐 트래픽 흐름**:
+1. 사용자가 `https://your-domain.com` 접속
+2. nginx가 SSL 암호화/복호화 처리
+3. nginx가 `localhost:3000`으로 프록시 (Docker 컨테이너)
+4. Docker에서 실행 중인 복슬 플래닝 포커 앱이 응답
+
+#### **D. 수동 설정 (고급 사용자용)**
+
+**1. nginx 설정 파일 위치**:
+```bash
+# 설정 파일
+/etc/nginx/sites-available/your-domain.com
+/etc/nginx/sites-enabled/your-domain.com
+
+# 설정 테스트
+sudo nginx -t
+
+# 재로드
+sudo systemctl reload nginx
+```
+
+**2. SSL 인증서 관리**:
+```bash
+# 인증서 상태 확인
+sudo certbot certificates
+
+# 수동 갱신
+sudo certbot renew
+
+# 특정 도메인 갱신
+sudo certbot renew --cert-name your-domain.com
+```
+
+**3. 로그 확인**:
+```bash
+# nginx 접근 로그
+sudo tail -f /var/log/nginx/access.log
+
+# nginx 에러 로그
+sudo tail -f /var/log/nginx/error.log
+
+# SSL 갱신 로그
+sudo tail -f /var/log/ssl-renew.log
+```
+
+#### **E. 문제 해결**
+
+**일반적인 문제들**:
+
+1. **도메인 DNS 설정**
+   ```bash
+   # 도메인이 서버 IP를 가리키는지 확인
+   nslookup your-domain.com
+   dig your-domain.com
+   ```
+
+2. **방화벽 설정**
+   ```bash
+   # 포트 80, 443 열기
+   sudo ufw allow 'Nginx Full'
+   sudo ufw status
+   ```
+
+3. **SSL 인증서 발급 실패**
+   ```bash
+   # 수동으로 인증서 발급 시도
+   sudo certbot --nginx -d your-domain.com --verbose
+   ```
+
+4. **Docker 컨테이너 연결 확인**
+   ```bash
+   # 3000 포트에서 앱이 실행 중인지 확인
+   curl http://localhost:3000
+   docker ps | grep planning-poker
+   ```
+
 ## 7. 📖 문서
 
 - [기능 요구사항](./docs/기능요구사항.md)

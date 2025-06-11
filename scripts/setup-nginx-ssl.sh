@@ -38,7 +38,7 @@ if [ -z "$DOMAIN" ] || [ -z "$EMAIL" ]; then
     print_error "도메인과 이메일이 필요합니다."
     echo ""
     echo "사용법: $0 <domain> <email>"
-    echo "예시: $0 poker.boksl.com admin@boksl.com"
+    echo "예시: $0 poker.example.com webmaster@example.com"
     exit 1
 fi
 

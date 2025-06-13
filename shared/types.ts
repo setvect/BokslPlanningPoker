@@ -45,15 +45,6 @@ export interface GameResult {
   validVotes: number;
 }
 
-// 방 정보 (간단한 버전)
-export interface RoomInfo {
-  id: string;
-  name: string;
-  userCount: number;
-  maxUsers: number;
-  gameState: GameState;
-}
-
 // API 응답 타입
 export interface ApiResponse<T = any> {
   success: boolean;
@@ -132,28 +123,21 @@ export interface RoomUpdateEvent {
   user?: User;
 }
 
-export interface GameUpdateEvent {
-  roomId: string;
-  gameState: GameState;
-  result?: GameResult;
-}
-
 export interface UserUpdateEvent {
   roomId: string;
   user: User;
   action: 'joined' | 'left' | 'updated' | 'card_selected';
 }
 
-export interface RevealCountdownEvent {
+export interface GameUpdateEvent {
   roomId: string;
-  remainingTime: number; // 남은 시간 (초)
-  isStarted: boolean;    // 카운트다운 시작 여부
+  gameState: GameState;
+  result?: GameResult;
 }
 
-// 통계 타입
-export interface GameStats {
-  totalRooms: number;
-  totalUsers: number;
-  activeRooms: number;
-  averageUsersPerRoom: number;
+// 카운트다운 이벤트 타입 (실제 사용되는 것만)
+export interface RevealCountdownEvent {
+  roomId: string;
+  remainingTime: number;
+  isStarted: boolean;
 } 

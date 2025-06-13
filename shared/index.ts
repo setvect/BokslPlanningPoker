@@ -10,7 +10,7 @@ export * from './constants';
 // 버전 정보
 export const SHARED_VERSION = '1.0.0';
 
-// 유틸리티 함수들
+// 유틸리티 함수들 (실제 사용되는 것만)
 export const Utils = {
   /**
    * 카드가 숫자 카드인지 확인
@@ -70,14 +70,6 @@ export const Utils = {
   },
   
   /**
-   * 방 ID 유효성 검사
-   */
-  validateRoomId: (id: string): boolean => {
-    if (!id || id.length < 3 || id.length > 20) return false;
-    return /^[a-zA-Z0-9]+$/.test(id);
-  },
-  
-  /**
    * 중복된 이름에 번호 추가
    */
   generateUniqueName: (originalName: string, existingNames: string[]): string => {
@@ -93,43 +85,14 @@ export const Utils = {
   },
   
   /**
-   * Date를 ISO 문자열로 변환 (직렬화용)
-   */
-  dateToISOString: (date: Date): string => {
-    return date.toISOString();
-  },
-  
-  /**
-   * ISO 문자열을 Date로 변환 (역직렬화용)
-   */
-  isoStringToDate: (isoString: string): Date => {
-    return new Date(isoString);
-  },
-  
-  /**
-   * 간단한 UUID 생성 (개발용)
+   * 간단한 UUID 생성
    */
   generateId: (): string => {
     return Math.random().toString(36).substr(2, 9);
   },
-  
-  /**
-   * 더 안전한 UUID 생성
-   */
-  generateSecureId: (): string => {
-    // 브라우저 환경에서 crypto API 사용
-    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
-      const array = new Uint8Array(16);
-      crypto.getRandomValues(array);
-      return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('').substr(0, 12);
-    }
-    
-    // fallback to Math.random
-    return Utils.generateId();
-  }
 };
 
-// 타입 가드 함수들 (에러 방지를 위해 간단하게 수정)
+// 타입 가드 함수들 (실제 사용되는 것만)
 export const TypeGuards = {
   /**
    * PlanningPokerCard 타입 가드
@@ -146,26 +109,4 @@ export const TypeGuards = {
     const validStates = ['selecting', 'revealed', 'finished'];
     return typeof state === 'string' && validStates.includes(state);
   },
-  
-  /**
-   * User 객체 타입 가드
-   */
-  isUser: (obj: any): boolean => {
-    return obj && 
-           typeof obj.id === 'string' &&
-           typeof obj.name === 'string' &&
-           typeof obj.roomId === 'string' &&
-           typeof obj.isConnected === 'boolean';
-  },
-  
-  /**
-   * Room 객체 타입 가드
-   */
-  isRoom: (obj: any): boolean => {
-    return obj && 
-           typeof obj.id === 'string' &&
-           typeof obj.name === 'string' &&
-           Array.isArray(obj.users) &&
-           TypeGuards.isGameState(obj.gameState);
-  }
 }; 

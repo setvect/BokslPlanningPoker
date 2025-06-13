@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useSocket } from '../hooks/useSocket'
 import AboutModal from './AboutModal'
 import { ThemeToggle } from './ThemeToggle'
+import { InstallPrompt } from './InstallPrompt'
 import type { Room } from '../../../shared/types'
 
 interface MainPageProps {
@@ -209,6 +210,9 @@ export default function MainPage({ onCreateRoom, onJoinRoom, error, onClearError
         isOpen={showAbout}
         onClose={() => setShowAbout(false)} 
       />
+      
+      {/* PWA 설치 프롬프트 */}
+      <InstallPrompt />
     </div>
   )
 } 

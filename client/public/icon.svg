@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- 배경 원 -->
+  <circle cx="256" cy="256" r="240" fill="#059669" stroke="#047857" stroke-width="8"/>
+  
+  <!-- 카드 배경 -->
+  <rect x="176" y="156" width="160" height="200" rx="16" ry="16" fill="white" stroke="#e5e7eb" stroke-width="2"/>
+  
+  <!-- 카드 내용 (숫자 8) -->
+  <text x="256" y="280" font-family="Arial, sans-serif" font-size="72" font-weight="bold" text-anchor="middle" fill="#059669">8</text>
+  
+  <!-- 작은 카드들 (겹쳐진 효과) -->
+  <rect x="156" y="136" width="160" height="200" rx="16" ry="16" fill="white" stroke="#e5e7eb" stroke-width="2" opacity="0.7"/>
+  <rect x="136" y="116" width="160" height="200" rx="16" ry="16" fill="white" stroke="#e5e7eb" stroke-width="2" opacity="0.4"/>
+</svg> 

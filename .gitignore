@@ -74,8 +74,7 @@ dist
 # Vite build output
 dist/
 
-# Rollup build output
-dist/
+dev-dist/
 
 # Storybook build outputs
 .out

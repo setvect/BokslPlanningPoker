@@ -17,6 +17,10 @@ interface GameHookState {
     isActive: boolean;
     remainingTime: number;
   };
+  newRoundCooldown: {
+    isActive: boolean;
+    remainingTime: number;
+  };
 }
 
 export function useGame() {
@@ -28,6 +32,10 @@ export function useGame() {
     loading: false,
     error: null,
     revealCountdown: {
+      isActive: false,
+      remainingTime: 0
+    },
+    newRoundCooldown: {
       isActive: false,
       remainingTime: 0
     }
@@ -242,6 +250,10 @@ export function useGame() {
         revealCountdown: {
           isActive: false,
           remainingTime: 0
+        },
+        newRoundCooldown: {
+          isActive: false,
+          remainingTime: 0
         }
       });
       
@@ -256,6 +268,10 @@ export function useGame() {
         loading: false,
         error: null,
         revealCountdown: {
+          isActive: false,
+          remainingTime: 0
+        },
+        newRoundCooldown: {
           isActive: false,
           remainingTime: 0
         }
@@ -389,6 +405,10 @@ export function useGame() {
     unsubscribers.push(
       socket.onCardsRevealed((data) => {
         console.log('카드 공개됨:', data.result);
+        
+        // 5초 새 라운드 쿨다운 시작
+        let cooldownTime = 5;
+        
         setGameState(prev => ({
           ...prev,
           gameResult: data.result || null,
@@ -399,8 +419,38 @@ export function useGame() {
           revealCountdown: {
             isActive: false,
             remainingTime: 0
+          },
+          newRoundCooldown: {
+            isActive: true,
+            remainingTime: cooldownTime
           }
         }));
+        
+        // 1초마다 쿨다운 타이머 업데이트
+        const cooldownInterval = setInterval(() => {
+          cooldownTime--;
+          
+          if (cooldownTime > 0) {
+            setGameState(prev => ({
+              ...prev,
+              newRoundCooldown: {
+                isActive: true,
+                remainingTime: cooldownTime
+              }
+            }));
+          } else {
+            // 쿨다운 완료
+            clearInterval(cooldownInterval);
+            setGameState(prev => ({
+              ...prev,
+              newRoundCooldown: {
+                isActive: false,
+                remainingTime: 0
+              }
+            }));
+            console.log('✅ 새 라운드 버튼 활성화됨');
+          }
+        }, 1000);
       })
     );
 
@@ -424,6 +474,10 @@ export function useGame() {
             selectedCard: undefined
           } : null,
           revealCountdown: {
+            isActive: false,
+            remainingTime: 0
+          },
+          newRoundCooldown: {
             isActive: false,
             remainingTime: 0
           }
@@ -470,6 +524,10 @@ export function useGame() {
     gameState.room.users.some(user => user.selectedCard) &&
     !gameState.revealCountdown.isActive; // 카운트다운 중이 아닐 때
 
+  const canStartNewRound = gameState.room &&
+    gameState.room.gameState === 'revealed' &&
+    !gameState.newRoundCooldown.isActive; // 쿨다운 중이 아닐 때
+
   const allUsersSelected = gameState.room &&
     gameState.room.users.length > 0 &&
     gameState.room.users.every(user => user.selectedCard);
@@ -493,6 +551,7 @@ export function useGame() {
     loading: gameState.loading,
     error: gameState.error,
     revealCountdown: gameState.revealCountdown,
+    newRoundCooldown: gameState.newRoundCooldown,
     
     // Socket 연결 상태
     isConnected: socket.isConnected,
@@ -501,6 +560,7 @@ export function useGame() {
     
     // 계산된 값들
     canRevealCards,
+    canStartNewRound,
     allUsersSelected,
     selectedCount,
     totalCount,
@@ -525,6 +585,11 @@ export function useGame() {
       gameState.room?.users.find(u => u.id === userId)?.selectedCard,
     
     hasUserSelected: (userId: string) => 
-      Boolean(gameState.room?.users.find(u => u.id === userId)?.selectedCard)
+      Boolean(gameState.room?.users.find(u => u.id === userId)?.selectedCard),
+    
+    getRoomStats: () => ({
+      total: gameState.room?.users.length || 0,
+      selected: gameState.room?.users.filter(u => u.selectedCard).length || 0
+    })
   };
 } 

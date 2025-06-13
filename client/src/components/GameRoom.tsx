@@ -355,11 +355,23 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
               </button>
             ) : (
               <button 
-                className={`px-6 py-3 text-base font-semibold bg-gray-600 dark:bg-gray-700 text-white rounded-lg shadow-md hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors ${game.loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`px-6 py-3 text-base font-semibold rounded-lg shadow-md transition-all duration-300 ${
+                  game.newRoundCooldown.isActive 
+                    ? 'bg-red-400 dark:bg-red-500 text-white cursor-not-allowed opacity-75' 
+                    : 'bg-gray-600 dark:bg-gray-700 text-white hover:bg-gray-700 dark:hover:bg-gray-600'
+                } ${game.loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                 onClick={game.resetRound}
-                disabled={game.loading}
+                disabled={game.loading || game.newRoundCooldown.isActive}
               >
-                {game.loading ? '초기화 중...' : '새 라운드'}
+                {game.newRoundCooldown.isActive ? (
+                  <span className="flex items-center gap-2">
+                    🔒 새 라운드까지 <span className="text-lg font-bold">{game.newRoundCooldown.remainingTime}</span>초
+                  </span>
+                ) : game.loading ? (
+                  '초기화 중...'
+                ) : (
+                  '새 라운드'
+                )}
               </button>
             )}
           </div>

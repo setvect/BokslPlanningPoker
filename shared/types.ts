@@ -144,6 +144,12 @@ export interface UserUpdateEvent {
   action: 'joined' | 'left' | 'updated' | 'card_selected';
 }
 
+export interface RevealCountdownEvent {
+  roomId: string;
+  remainingTime: number; // 남은 시간 (초)
+  isStarted: boolean;    // 카운트다운 시작 여부
+}
+
 // 통계 타입
 export interface GameStats {
   totalRooms: number;

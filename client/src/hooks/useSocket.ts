@@ -12,6 +12,7 @@ import type {
   RoomUpdateEvent,
   GameUpdateEvent,
   UserUpdateEvent,
+  RevealCountdownEvent,
   ApiResponse,
   Room
 } from '../../../shared/types.ts';
@@ -395,6 +396,14 @@ export function useSocket(options: UseSocketOptions = {}) {
     return () => {};
   };
 
+  const onRevealCountdown = (callback: (data: RevealCountdownEvent) => void) => {
+    if (socketRef.current) {
+      socketRef.current.on(SOCKET_EVENTS.REVEAL_COUNTDOWN, callback);
+      return () => socketRef.current?.off(SOCKET_EVENTS.REVEAL_COUNTDOWN, callback);
+    }
+    return () => {};
+  };
+
   const onError = (callback: (error: { code: string; message: string; details?: any }) => void) => {
     if (socketRef.current) {
       socketRef.current.on(SOCKET_EVENTS.ERROR, callback);
@@ -437,6 +446,7 @@ export function useSocket(options: UseSocketOptions = {}) {
     onUserUpdate,
     onCardsRevealed,
     onRoundReset,
+    onRevealCountdown,
     onError,
     
     // 직접 소켓 접근 (고급 사용)

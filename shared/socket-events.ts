@@ -48,6 +48,7 @@ export const SOCKET_EVENTS = {
   USER_UPDATE: 'user_update',
   CARDS_REVEALED: 'cards_revealed',
   ROUND_RESET: 'round_reset',
+  REVEAL_COUNTDOWN: 'reveal_countdown',
   
   // 에러 및 상태 (서버 → 클라이언트)
   ERROR: 'error',

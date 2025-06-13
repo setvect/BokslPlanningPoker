@@ -335,11 +335,23 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
           <div className="mb-3">
             {currentRoom?.gameState === 'selecting' ? (
               <button 
-                className={`px-6 py-3 text-base font-semibold bg-success-600 dark:bg-success-700 text-white rounded-lg shadow-md hover:bg-success-700 dark:hover:bg-success-600 transition-colors ${!game.canRevealCards || game.loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`px-6 py-3 text-base font-semibold rounded-lg shadow-md transition-all duration-300 ${
+                  game.revealCountdown.isActive 
+                    ? 'bg-orange-500 dark:bg-orange-600 text-white animate-pulse ring-4 ring-orange-300 dark:ring-orange-700 ring-opacity-75' 
+                    : 'bg-success-600 dark:bg-success-700 text-white hover:bg-success-700 dark:hover:bg-success-600'
+                } ${!game.canRevealCards || game.loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                 disabled={!game.canRevealCards || game.loading}
                 onClick={game.revealCards}
               >
-                {game.loading ? '카드 오픈 중...' : `카드 오픈(${selectedUsers}/${totalUsers})`}
+                {game.revealCountdown.isActive ? (
+                  <span className="flex items-center gap-2">
+                    🕒 카드 공개까지 <span className="text-xl font-bold">{game.revealCountdown.remainingTime}</span>초
+                  </span>
+                ) : game.loading ? (
+                  '카드 오픈 중...'
+                ) : (
+                  `카드 오픈(${selectedUsers}/${totalUsers})`
+                )}
               </button>
             ) : (
               <button 

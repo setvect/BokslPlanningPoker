@@ -13,6 +13,10 @@ interface GameHookState {
   gameResult: GameResult | null;
   loading: boolean;
   error: string | null;
+  revealCountdown: {
+    isActive: boolean;
+    remainingTime: number;
+  };
 }
 
 export function useGame() {
@@ -22,7 +26,11 @@ export function useGame() {
     currentUser: null,
     gameResult: null,
     loading: false,
-    error: null
+    error: null,
+    revealCountdown: {
+      isActive: false,
+      remainingTime: 0
+    }
   });
 
   // 에러 상태 클리어
@@ -230,7 +238,11 @@ export function useGame() {
         currentUser: null,
         gameResult: null,
         loading: false,
-        error: null
+        error: null,
+        revealCountdown: {
+          isActive: false,
+          remainingTime: 0
+        }
       });
       
       console.log('방 나가기 성공');
@@ -242,7 +254,11 @@ export function useGame() {
         currentUser: null,
         gameResult: null,
         loading: false,
-        error: null
+        error: null,
+        revealCountdown: {
+          isActive: false,
+          remainingTime: 0
+        }
       });
     }
   }, [gameState.room, socket]);
@@ -379,7 +395,11 @@ export function useGame() {
           room: prev.room ? {
             ...prev.room,
             gameState: data.gameState
-          } : null
+          } : null,
+          revealCountdown: {
+            isActive: false,
+            remainingTime: 0
+          }
         }));
       })
     );
@@ -402,7 +422,25 @@ export function useGame() {
           currentUser: prev.currentUser ? {
             ...prev.currentUser,
             selectedCard: undefined
-          } : null
+          } : null,
+          revealCountdown: {
+            isActive: false,
+            remainingTime: 0
+          }
+        }));
+      })
+    );
+
+    // 카드 공개 카운트다운
+    unsubscribers.push(
+      socket.onRevealCountdown((data) => {
+        console.log('🕒 카드 공개 카운트다운:', data.remainingTime + '초 남음');
+        setGameState(prev => ({
+          ...prev,
+          revealCountdown: {
+            isActive: data.isStarted,
+            remainingTime: data.remainingTime
+          }
         }));
       })
     );
@@ -429,7 +467,8 @@ export function useGame() {
   const canRevealCards = gameState.room && 
     gameState.room.gameState === 'selecting' &&
     gameState.room.users.length >= 1 && // 최소 1명 이상 참여
-    gameState.room.users.some(user => user.selectedCard); // 최소 1명 이상 카드 선택
+    gameState.room.users.some(user => user.selectedCard) &&
+    !gameState.revealCountdown.isActive; // 카운트다운 중이 아닐 때
 
   const allUsersSelected = gameState.room &&
     gameState.room.users.length > 0 &&
@@ -453,6 +492,7 @@ export function useGame() {
     gameResult: gameState.gameResult,
     loading: gameState.loading,
     error: gameState.error,
+    revealCountdown: gameState.revealCountdown,
     
     // Socket 연결 상태
     isConnected: socket.isConnected,

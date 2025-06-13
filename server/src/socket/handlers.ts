@@ -34,6 +34,8 @@ interface User extends SharedUser {
 interface Room extends Omit<SharedRoom, 'users'> {
   users: Map<string, User>;
   emptyTimestamp?: string; // 방이 빈 시간 (새로고침 대응용)
+  revealTimer?: NodeJS.Timeout; // 카드 오픈 타이머
+  isRevealCountdownActive?: boolean; // 카운트다운 진행 중 여부
 }
 
 // 메모리 기반 데이터 저장소
@@ -168,8 +170,78 @@ class GameStore {
     return { room, user, result };
   }
   
-  // 카드 공개
-  revealCards(socketId: string): { room: Room, result: GameResult } {
+  // 카드 공개 (3초 카운트다운 시작)
+  startRevealCountdown(socketId: string, io: any): { room: Room } {
+    const roomId = this.userRoomMap.get(socketId);
+    if (!roomId) throw new Error(ERROR_MESSAGES[ERROR_CODES.USER_NOT_IN_ROOM]);
+    
+    const room = this.rooms.get(roomId);
+    if (!room) throw new Error(ERROR_MESSAGES[ERROR_CODES.ROOM_NOT_FOUND]);
+    
+    if (room.gameState !== GameState.SELECTING) {
+      throw new Error(ERROR_MESSAGES[ERROR_CODES.CARDS_ALREADY_REVEALED]);
+    }
+    
+    if (room.isRevealCountdownActive) {
+      throw new Error('카드 공개가 이미 진행 중입니다');
+    }
+    
+    // 카운트다운 시작
+    room.isRevealCountdownActive = true;
+    room.lastActivity = new Date().toISOString();
+    
+    console.log(`🕒 카드 공개 카운트다운 시작: 방 ${room.id}`);
+    
+    let countdown = 3; // 3초 카운트다운
+    
+    // 카운트다운 시작 이벤트 전송
+    io.to(room.id).emit(SOCKET_EVENTS.REVEAL_COUNTDOWN, {
+      roomId: room.id,
+      remainingTime: countdown,
+      isStarted: true
+    });
+    
+    const countdownInterval = setInterval(() => {
+      countdown--;
+      
+      if (countdown > 0) {
+        // 카운트다운 업데이트
+        io.to(room.id).emit(SOCKET_EVENTS.REVEAL_COUNTDOWN, {
+          roomId: room.id,
+          remainingTime: countdown,
+          isStarted: true
+        });
+        console.log(`⏰ 카드 공개 카운트다운: ${countdown}초 남음`);
+      } else {
+        // 카운트다운 완료 - 카드 공개
+        clearInterval(countdownInterval);
+        
+        if (room.revealTimer) {
+          clearTimeout(room.revealTimer);
+        }
+        
+        room.gameState = GameState.REVEALED;
+        room.isRevealCountdownActive = false;
+        room.lastActivity = new Date().toISOString();
+        
+        const result = this.calculateGameResult(room);
+        
+        // 카드 공개 이벤트 전송
+        io.to(room.id).emit(SOCKET_EVENTS.CARDS_REVEALED, {
+          roomId: room.id,
+          gameState: room.gameState,
+          result
+        });
+        
+        console.log(`✅ 카드 공개 완료: 방 ${room.id}, 평균: ${result.average}`);
+      }
+    }, 1000); // 1초마다 실행
+    
+    return { room };
+  }
+  
+  // 즉시 카드 공개 (기존 메서드 - 내부적으로만 사용)
+  revealCardsImmediately(socketId: string): { room: Room, result: GameResult } {
     const roomId = this.userRoomMap.get(socketId);
     if (!roomId) throw new Error(ERROR_MESSAGES[ERROR_CODES.USER_NOT_IN_ROOM]);
     
@@ -194,6 +266,13 @@ class GameStore {
     
     const room = this.rooms.get(roomId);
     if (!room) throw new Error(ERROR_MESSAGES[ERROR_CODES.ROOM_NOT_FOUND]);
+    
+    // 진행 중인 카운트다운 정리
+    if (room.revealTimer) {
+      clearTimeout(room.revealTimer);
+      room.revealTimer = undefined;
+    }
+    room.isRevealCountdownActive = false;
     
     room.gameState = GameState.SELECTING;
     room.lastActivity = new Date().toISOString();
@@ -525,21 +604,14 @@ export function setupSocketHandlers(io: Server) {
       }
     });
     
-    // 카드 공개
+    // 카드 공개 (3초 카운트다운 시작)
     socket.on(SOCKET_EVENTS.REVEAL_CARDS, (data: RevealCardsPayload, callback: (response: ApiResponse) => void) => {
       try {
-        const { room, result } = gameStore.revealCards(socket.id);
+        const { room } = gameStore.startRevealCountdown(socket.id, io);
         
         callback({ success: true });
         
-        // 방의 모든 사용자에게 카드 공개 알림
-        io.to(room.id).emit(SOCKET_EVENTS.CARDS_REVEALED, {
-          roomId: room.id,
-          gameState: room.gameState,
-          result
-        } as GameUpdateEvent);
-        
-        console.log(`카드 공개됨: 방 ${room.id}, 평균: ${result.average}`);
+        console.log(`카드 공개 카운트다운 시작: 방 ${room.id}`);
       } catch (error) {
         console.error('카드 공개 실패:', error);
         callback({

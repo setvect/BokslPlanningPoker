@@ -41,7 +41,11 @@ const io = new Server(server, {
     methods: ['GET', 'POST'],
     credentials: true
   },
-  transports: ['websocket', 'polling']
+  transports: ['websocket', 'polling'],
+  // 모바일 환경 최적화 설정
+  pingTimeout: 60000,    // 60초 - 모바일 네트워크 불안정성 고려
+  pingInterval: 25000,   // 25초 - 적절한 하트비트 간격
+  allowEIO3: true        // 구버전 클라이언트 호환성
 });
 
 // 미들웨어 설정

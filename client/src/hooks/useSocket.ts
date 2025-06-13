@@ -61,8 +61,11 @@ export function useSocket(options: UseSocketOptions = {}) {
       transports: ['websocket', 'polling'],
       timeout: 5000,
       reconnection: true,
-      reconnectionAttempts: 3,
-      reconnectionDelay: 1000
+      reconnectionAttempts: 5,      // 3 → 5로 증가 (모바일 환경 고려)
+      reconnectionDelay: 2000,      // 1000 → 2000으로 조정
+      reconnectionDelayMax: 10000,  // 최대 재연결 지연 시간
+      randomizationFactor: 0.5      // 재연결 지연 시간 랜덤화
+      // 핑 설정은 서버에서 제어 (pingTimeout, pingInterval)
     });
 
     socketRef.current = socket;
@@ -112,6 +115,11 @@ export function useSocket(options: UseSocketOptions = {}) {
       }));
     });
 
+    // 핑/퐁 이벤트 처리 (서버 응답 확인용)
+    socket.on('pong', () => {
+      console.log('🏓 Pong 수신 - 연결 상태 양호');
+    });
+
     // 클린업
     return () => {
       console.log('Socket.io 연결 정리...');
@@ -119,6 +127,53 @@ export function useSocket(options: UseSocketOptions = {}) {
       socketRef.current = null;
     };
   }, [autoConnect, url]);
+
+  // Page Visibility API를 활용한 모바일 대기모드 대응
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // 포그라운드로 복귀했을 때
+        console.log('📱 포그라운드 복귀 감지');
+        
+        if (socketRef.current && !socketRef.current.connected) {
+          console.log('🔄 연결이 끊어진 상태, 재연결 시도...');
+          socketRef.current.connect();
+        } else if (socketRef.current?.connected) {
+          // 연결 상태 확인을 위한 핑 전송
+          console.log('🏓 연결 상태 확인용 핑 전송');
+          socketRef.current.emit('ping');
+        }
+      } else {
+        // 백그라운드로 이동했을 때
+        console.log('📱 백그라운드 이동 감지');
+      }
+    };
+
+    // 네트워크 상태 변화 감지 (모바일 네트워크 전환 대응)
+    const handleOnline = () => {
+      console.log('🌐 네트워크 연결 복구됨');
+      if (socketRef.current && !socketRef.current.connected) {
+        console.log('🔄 네트워크 복구로 인한 재연결 시도...');
+        socketRef.current.connect();
+      }
+    };
+
+    const handleOffline = () => {
+      console.log('🌐 네트워크 연결 끊어짐');
+    };
+
+    // 이벤트 리스너 등록
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    // 클린업
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   // 수동 연결/해제
   const connect = () => {

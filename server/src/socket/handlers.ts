@@ -338,6 +338,12 @@ export function setupSocketHandlers(io: Server) {
   io.on(SOCKET_EVENTS.CONNECTION, (socket: Socket) => {
     console.log(`사용자 연결됨: ${socket.id}`);
     
+    // 핑/퐁 이벤트 처리 (모바일 연결 안정성을 위한 하트비트)
+    socket.on('ping', () => {
+      console.log(`🏓 Ping 수신: ${socket.id}`);
+      socket.emit('pong');
+    });
+    
     // 방 생성
     socket.on(SOCKET_EVENTS.CREATE_ROOM, (data: CreateRoomPayload, callback: (response: CreateRoomResponse) => void) => {
       try {

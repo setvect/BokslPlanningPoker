@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSocket } from './useSocket';
+import { STORAGE_KEYS } from '../../../shared/constants.ts';
 import type { 
   Room, 
   User, 
@@ -22,6 +23,39 @@ interface GameHookState {
     remainingTime: number;
   };
 }
+
+// localStorage 유틸리티 함수들
+const saveSelectedCard = (roomId: string, card: PlanningPokerCard): void => {
+  try {
+    const key = `${STORAGE_KEYS.SELECTED_CARD}_${roomId}`;
+    localStorage.setItem(key, card);
+    console.log('🔧 카드 선택 정보 저장:', { roomId, card });
+  } catch (error) {
+    console.warn('카드 선택 정보 저장 실패:', error);
+  }
+};
+
+const getSavedCard = (roomId: string): PlanningPokerCard | null => {
+  try {
+    const key = `${STORAGE_KEYS.SELECTED_CARD}_${roomId}`;
+    const savedCard = localStorage.getItem(key) as PlanningPokerCard;
+    console.log('🔧 저장된 카드 선택 정보 로드:', { roomId, savedCard });
+    return savedCard;
+  } catch (error) {
+    console.warn('저장된 카드 정보 로드 실패:', error);
+    return null;
+  }
+};
+
+const clearSavedCard = (roomId: string): void => {
+  try {
+    const key = `${STORAGE_KEYS.SELECTED_CARD}_${roomId}`;
+    localStorage.removeItem(key);
+    console.log('🔧 카드 선택 정보 삭제:', { roomId });
+  } catch (error) {
+    console.warn('카드 선택 정보 삭제 실패:', error);
+  }
+};
 
 export function useGame() {
   const socket = useSocket();
@@ -140,13 +174,16 @@ export function useGame() {
         };
       });
 
-      // 2. 서버에 요청 전송 (백그라운드)
+      // 2. localStorage에 카드 선택 정보 저장
+      saveSelectedCard(gameState.room.id, card);
+
+      // 3. 서버에 요청 전송 (백그라운드)
       const response = await socket.selectCard({ 
         roomId: gameState.room.id, 
         card 
       });
       
-      // 3. 공개 상태에서 카드 변경 시 게임 결과 업데이트
+      // 4. 공개 상태에서 카드 변경 시 게임 결과 업데이트
       if (response.result) {
         setGameState(prev => ({
           ...prev,
@@ -155,7 +192,7 @@ export function useGame() {
       }
       
     } catch (error) {
-      // 4. 실패 시 이전 상태로 롤백
+      // 5. 실패 시 이전 상태로 롤백
       setGameState(prev => {
         if (!prev.room || !prev.currentUser) return prev;
         
@@ -174,6 +211,14 @@ export function useGame() {
           error: error instanceof Error ? error.message : '카드 선택에 실패했습니다'
         };
       });
+      
+      // 실패 시 localStorage에서도 이전 카드로 복원
+      if (previousCard) {
+        saveSelectedCard(gameState.room.id, previousCard);
+      } else {
+        clearSavedCard(gameState.room.id);
+      }
+      
       throw error;
     }
   }, [gameState.room, gameState.currentUser, socket]);
@@ -222,6 +267,9 @@ export function useGame() {
         loading: false
       }));
       
+      // 저장된 카드 선택 정보 삭제
+      clearSavedCard(gameState.room.id);
+      
       console.log('라운드 초기화 성공');
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '라운드 초기화에 실패했습니다';
@@ -238,8 +286,13 @@ export function useGame() {
   const leaveRoom = useCallback(async () => {
     if (!gameState.room) return;
 
+    const roomId = gameState.room.id;
+
     try {
-      await socket.leaveRoom(gameState.room.id);
+      await socket.leaveRoom(roomId);
+      
+      // 저장된 카드 선택 정보 삭제
+      clearSavedCard(roomId);
       
       setGameState({
         room: null,
@@ -260,7 +313,10 @@ export function useGame() {
       console.log('방 나가기 성공');
     } catch (error) {
       console.error('방 나가기 실패:', error);
+      
       // 에러가 발생해도 로컬 상태는 초기화
+      clearSavedCard(roomId);
+      
       setGameState({
         room: null,
         currentUser: null,
@@ -328,6 +384,52 @@ export function useGame() {
       throw error;
     }
   }, [gameState.room, socket, setLoading, clearError]);
+
+  // 저장된 카드 선택 정보 복원 (방 참여 후)
+  useEffect(() => {
+    if (gameState.room && gameState.currentUser) {
+      const savedCard = getSavedCard(gameState.room.id);
+      
+      // 저장된 카드가 있고, 현재 선택된 카드와 다르면 복원
+      if (savedCard && gameState.currentUser.selectedCard !== savedCard) {
+        console.log('💾 저장된 카드 선택 정보 복원:', {
+          savedCard,
+          gameState: gameState.room.gameState
+        });
+        
+        // 즉시 로컬 상태 업데이트
+        setGameState(prev => {
+          if (!prev.room || !prev.currentUser) return prev;
+          
+          const updatedUser = { ...prev.currentUser, selectedCard: savedCard };
+          const updatedUsers = prev.room.users.map(user => 
+            user.id === prev.currentUser!.id ? updatedUser : user
+          );
+
+          return {
+            ...prev,
+            currentUser: updatedUser,
+            room: {
+              ...prev.room,
+              users: updatedUsers
+            }
+          };
+        });
+        
+        // 서버 동기화 (selecting과 revealed 상태 모두에서 가능)
+        if (gameState.room.gameState === 'selecting' || gameState.room.gameState === 'revealed') {
+          socket.selectCard({ 
+            roomId: gameState.room.id, 
+            card: savedCard 
+          }).catch(error => {
+            console.warn('저장된 카드 복원 실패:', error);
+            // 복원 실패 시 저장된 정보 삭제
+            clearSavedCard(gameState.room!.id);
+          });
+        }
+      }
+    }
+  }, [gameState.room, gameState.currentUser, socket]);
 
   // Socket.io 이벤트 리스너 등록
   useEffect(() => {
@@ -483,30 +585,37 @@ export function useGame() {
     unsubscribers.push(
       socket.onRoundReset((data) => {
         console.log('라운드 초기화됨');
-        setGameState(prev => ({
-          ...prev,
-          gameResult: null,
-          room: prev.room ? {
-            ...prev.room,
-            gameState: data.gameState,
-            users: prev.room.users.map(user => ({
-              ...user,
-              selectedCard: undefined
-            }))
-          } : null,
-          currentUser: prev.currentUser ? {
-            ...prev.currentUser,
-            selectedCard: undefined
-          } : null,
-          revealCountdown: {
-            isActive: false,
-            remainingTime: 0
-          },
-          newRoundCooldown: {
-            isActive: false,
-            remainingTime: 0
+        setGameState(prev => {
+          // 저장된 카드 선택 정보 삭제
+          if (prev.room) {
+            clearSavedCard(prev.room.id);
           }
-        }));
+          
+          return {
+            ...prev,
+            gameResult: null,
+            room: prev.room ? {
+              ...prev.room,
+              gameState: data.gameState,
+              users: prev.room.users.map(user => ({
+                ...user,
+                selectedCard: undefined
+              }))
+            } : null,
+            currentUser: prev.currentUser ? {
+              ...prev.currentUser,
+              selectedCard: undefined
+            } : null,
+            revealCountdown: {
+              isActive: false,
+              remainingTime: 0
+            },
+            newRoundCooldown: {
+              isActive: false,
+              remainingTime: 0
+            }
+          };
+        });
       })
     );
 

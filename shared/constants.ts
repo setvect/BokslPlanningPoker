@@ -71,6 +71,7 @@ export const ERROR_MESSAGES = {
 // 로컬 스토리지 키 (실제 사용되는 것만)
 export const STORAGE_KEYS = {
   USER_NAME: 'planning_poker_user_name',
+  SELECTED_CARD: 'planning_poker_selected_card',
 } as const;
 
 // 클라이언트용 기본 설정 (실제 사용되는 것만)

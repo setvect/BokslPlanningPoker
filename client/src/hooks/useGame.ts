@@ -406,51 +406,76 @@ export function useGame() {
       socket.onCardsRevealed((data) => {
         console.log('카드 공개됨:', data.result);
         
-        // 5초 새 라운드 쿨다운 시작
-        let cooldownTime = 5;
-        
-        setGameState(prev => ({
-          ...prev,
-          gameResult: data.result || null,
-          room: prev.room ? {
-            ...prev.room,
-            gameState: data.gameState
-          } : null,
-          revealCountdown: {
-            isActive: false,
-            remainingTime: 0
-          },
-          newRoundCooldown: {
-            isActive: true,
-            remainingTime: cooldownTime
-          }
-        }));
-        
-        // 1초마다 쿨다운 타이머 업데이트
-        const cooldownInterval = setInterval(() => {
-          cooldownTime--;
+        setGameState(prev => {
+          // 이미 쿨다운이 진행 중이거나 이미 공개 상태였다면 쿠다운을 시작하지 않음
+          const shouldStartCooldown = prev.room?.gameState !== 'revealed' && !prev.newRoundCooldown.isActive;
           
-          if (cooldownTime > 0) {
-            setGameState(prev => ({
+          if (shouldStartCooldown) {
+            console.log('🔄 새 라운드 쿨다운 시작 (최초 카드 공개)');
+            
+            // 3초 새 라운드 쿨다운 시작
+            let cooldownTime = 3;
+            
+            // 1초마다 쿨다운 타이머 업데이트
+            const cooldownInterval = setInterval(() => {
+              cooldownTime--;
+              
+              if (cooldownTime > 0) {
+                setGameState(current => ({
+                  ...current,
+                  newRoundCooldown: {
+                    isActive: true,
+                    remainingTime: cooldownTime
+                  }
+                }));
+              } else {
+                // 쿨다운 완료
+                clearInterval(cooldownInterval);
+                setGameState(current => ({
+                  ...current,
+                  newRoundCooldown: {
+                    isActive: false,
+                    remainingTime: 0
+                  }
+                }));
+                console.log('✅ 새 라운드 버튼 활성화됨');
+              }
+            }, 1000);
+            
+            return {
               ...prev,
+              gameResult: data.result || null,
+              room: prev.room ? {
+                ...prev.room,
+                gameState: data.gameState
+              } : null,
+              revealCountdown: {
+                isActive: false,
+                remainingTime: 0
+              },
               newRoundCooldown: {
                 isActive: true,
                 remainingTime: cooldownTime
               }
-            }));
+            };
           } else {
-            // 쿨다운 완료
-            clearInterval(cooldownInterval);
-            setGameState(prev => ({
+            console.log('🔄 게임 결과 업데이트 (쿨다운 유지)');
+            // 쿨다운을 시작하지 않고 게임 결과만 업데이트
+            return {
               ...prev,
-              newRoundCooldown: {
+              gameResult: data.result || null,
+              room: prev.room ? {
+                ...prev.room,
+                gameState: data.gameState
+              } : null,
+              revealCountdown: {
                 isActive: false,
                 remainingTime: 0
               }
-            }));
-            console.log('✅ 새 라운드 버튼 활성화됨');
+              // newRoundCooldown는 기존 상태 유지
+            };
           }
-        }, 1000);
+        });
       })
     );
 

@@ -453,15 +453,22 @@ export function useGame() {
             users: prev.room?.users?.map(u => u.name)
           });
           
+          // currentUser 정보도 업데이트된 방 데이터에서 찾아서 동기화
+          const updatedCurrentUser = prev.currentUser && data.room?.users 
+            ? data.room.users.find(user => user.id === prev.currentUser!.id) || prev.currentUser
+            : prev.currentUser;
+          
           const newState = {
             ...prev,
-            room: data.room
+            room: data.room,
+            currentUser: updatedCurrentUser
           };
           
           console.log('🔍 새 상태:', {
             roomId: newState.room?.id,
             usersCount: newState.room?.users?.length,
-            users: newState.room?.users?.map(u => u.name)
+            users: newState.room?.users?.map(u => u.name),
+            currentUserName: newState.currentUser?.name
           });
           
           return newState;
@@ -477,13 +484,14 @@ export function useGame() {
           if (!prev.room) return prev;
 
           // 본인의 카드 선택 업데이트는 무시 (이미 Optimistic Update로 처리됨)
+          // 하지만 본인의 이름 변경이나 다른 정보는 반영
           const isMyCardSelection = prev.currentUser?.id === data.user.id && data.action === 'card_selected';
           if (isMyCardSelection) {
             console.log('본인 카드 선택 업데이트 무시:', data.user.name, data.user.selectedCard);
             return prev;
           }
 
-          // 다른 사용자의 업데이트만 처리
+          // 다른 사용자의 업데이트나 본인의 카드 선택 외 업데이트 처리
           const updatedUsers = prev.room.users.map(user => 
             user.id === data.user.id ? data.user : user
           );
@@ -494,9 +502,9 @@ export function useGame() {
               ...prev.room,
               users: updatedUsers
             },
-            // 본인이 아닌 경우에만 currentUser 업데이트
+            // 본인의 정보 업데이트 (카드 선택 제외)
             currentUser: prev.currentUser?.id === data.user.id 
-              ? prev.currentUser // 본인은 그대로 유지
+              ? { ...data.user, selectedCard: prev.currentUser.selectedCard } // 카드는 로컬 상태 유지, 나머지는 서버 데이터 사용
               : prev.currentUser
           };
         });

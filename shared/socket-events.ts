@@ -11,6 +11,7 @@ import {
   CardSelectionResponse,
   RoomUpdateEvent,
   UserUpdateEvent,
+  GameUpdateEvent,
   RevealCountdownEvent,
   ApiResponse,
   Room
@@ -40,11 +41,13 @@ export const SOCKET_EVENTS = {
   // 실시간 업데이트 (서버 → 클라이언트)
   ROOM_UPDATE: 'room_update',
   USER_UPDATE: 'user_update',
+  GAME_UPDATE: 'game_update',
   CARDS_REVEALED: 'cards_revealed',
   ROUND_RESET: 'round_reset',
   REVEAL_COUNTDOWN: 'reveal_countdown',
   
   // 시스템 관련
+  ERROR: 'error',
   PING: 'ping',
   PONG: 'pong',
 } as const;
@@ -54,11 +57,13 @@ export interface ServerToClientEvents {
   // 방 관련 응답
   [SOCKET_EVENTS.ROOM_UPDATE]: (data: RoomUpdateEvent) => void;
   [SOCKET_EVENTS.USER_UPDATE]: (data: UserUpdateEvent) => void;
+  [SOCKET_EVENTS.GAME_UPDATE]: (data: GameUpdateEvent) => void;
   [SOCKET_EVENTS.CARDS_REVEALED]: (data: any) => void;
   [SOCKET_EVENTS.ROUND_RESET]: (data: any) => void;
   [SOCKET_EVENTS.REVEAL_COUNTDOWN]: (data: RevealCountdownEvent) => void;
   
   // 시스템
+  [SOCKET_EVENTS.ERROR]: (error: { code: string; message: string; details?: any }) => void;
   [SOCKET_EVENTS.PONG]: () => void;
 }
 

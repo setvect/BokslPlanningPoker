@@ -7,7 +7,8 @@ import compression from 'compression';
 import path from 'path';
 import fs from 'fs';
 import { setupSocketHandlers } from './socket/handlers';
-import { GAME_CONFIG } from '../../shared';
+import { setupTypingHandlers } from './socket/typing-handlers';
+import { GAME_CONFIG, TYPING_GAME_CONFIG } from '../../shared';
 
 // 환경 변수 설정
 const PORT = process.env.PORT || 3001;
@@ -140,6 +141,7 @@ if (fs.existsSync(indexPath)) {
 
 // Socket.io 이벤트 핸들러 설정
 setupSocketHandlers(io);
+setupTypingHandlers(io);
 
 // 에러 핸들링
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -162,8 +164,9 @@ server.listen(PORT, () => {
   console.log(`📊 통계: http://localhost:${PORT}/api/stats`);
   console.log(`🌍 환경: ${NODE_ENV}`);
   console.log(`🔗 CORS 허용 origins:`, corsOrigins);
-  console.log(`🎮 최대 방 개수: ${GAME_CONFIG.MAX_ROOMS}`);
-  console.log(`👥 방당 최대 인원: ${GAME_CONFIG.MAX_USERS_PER_ROOM}`);
+  console.log(`🎮 플래닝 포커 - 최대 방 개수: ${GAME_CONFIG.MAX_ROOMS}`);
+  console.log(`👥 플래닝 포커 - 방당 최대 인원: ${GAME_CONFIG.MAX_USERS_PER_ROOM}`);
+  console.log(`⌨️ 타자 게임 - 방당 최대 인원: ${TYPING_GAME_CONFIG.MAX_PLAYERS_PER_ROOM}`);
 });
 
 // 우아한 종료 처리

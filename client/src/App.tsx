@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import MainPage from './components/MainPage';
 import JoinRoom from './components/JoinRoom';
 import GameRoom from './components/GameRoom';
+import { TypingMainPage } from './components/typing';
 import { useGame } from './hooks/useGame';
 import { STORAGE_KEYS } from '../../shared/constants.ts';
 import type { AppState } from './types';
@@ -31,6 +32,12 @@ const getRoomIdFromUrl = (): string | null => {
   return match ? match[1] : null;
 };
 
+// URL이 타자 게임 경로인지 확인
+const isTypingGamePath = (): boolean => {
+  const path = window.location.pathname;
+  return path === '/typing' || path.startsWith('/typing/');
+};
+
 // URL 변경 (히스토리 관리)
 const updateUrl = (roomId?: string): void => {
   const newUrl = roomId ? `/room/${roomId}` : '/';
@@ -39,7 +46,30 @@ const updateUrl = (roomId?: string): void => {
 
 function App() {
   console.log('App 컴포넌트 시작');
-  
+
+  // 타자 게임 경로인 경우 타자 게임 페이지 렌더링
+  const [isTypingGame, setIsTypingGame] = useState(isTypingGamePath());
+
+  // 브라우저 히스토리 변경 감지
+  useEffect(() => {
+    const handlePopState = () => {
+      setIsTypingGame(isTypingGamePath());
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  // 타자 게임 페이지
+  if (isTypingGame) {
+    return <TypingMainPage />;
+  }
+
+  return <PlanningPokerApp />;
+}
+
+// 플래닝 포커 앱 컴포넌트 분리
+function PlanningPokerApp() {
   const [appState, setAppState] = useState<AppState>('main');
   const [pendingRoomData, setPendingRoomData] = useState<{
     roomId: string;

@@ -14,7 +14,27 @@ import {
   GameUpdateEvent,
   RevealCountdownEvent,
   ApiResponse,
-  Room
+  Room,
+  // 타자 게임 타입
+  CreateTypingRoomPayload,
+  CreateTypingRoomResponse,
+  JoinTypingRoomPayload,
+  JoinTypingRoomResponse,
+  LeaveTypingRoomPayload,
+  StartTypingGamePayload,
+  StartTypingGameResponse,
+  TypingInputPayload,
+  TypingInputResponse,
+  TypingSubmitPayload,
+  TypingSubmitResponse,
+  TypingRoomListItem,
+  TypingRoomUpdateEvent,
+  TypingCountdownEvent,
+  TypingRoundStartEvent,
+  TypingProgressEvent,
+  TypingFirstFinishEvent,
+  TypingPlayerFinishEvent,
+  TypingRoundEndEvent
 } from './types';
 
 // Socket.io 이벤트 이름 상수 (실제 사용되는 것만)
@@ -50,6 +70,30 @@ export const SOCKET_EVENTS = {
   ERROR: 'error',
   PING: 'ping',
   PONG: 'pong',
+
+  // ======================================
+  // 타자 게임 이벤트
+  // ======================================
+
+  // 타자 게임 방 관련 (클라이언트 → 서버)
+  TYPING_CREATE_ROOM: 'typing_create_room',
+  TYPING_JOIN_ROOM: 'typing_join_room',
+  TYPING_LEAVE_ROOM: 'typing_leave_room',
+  TYPING_GET_ROOM_LIST: 'typing_get_room_list',
+
+  // 타자 게임 관련 (클라이언트 → 서버)
+  TYPING_START_GAME: 'typing_start_game',
+  TYPING_INPUT: 'typing_input',
+  TYPING_SUBMIT: 'typing_submit',
+
+  // 타자 게임 실시간 업데이트 (서버 → 클라이언트)
+  TYPING_ROOM_UPDATE: 'typing_room_update',
+  TYPING_COUNTDOWN: 'typing_countdown',
+  TYPING_ROUND_START: 'typing_round_start',
+  TYPING_PROGRESS: 'typing_progress',
+  TYPING_FIRST_FINISH: 'typing_first_finish',
+  TYPING_PLAYER_FINISH: 'typing_player_finish',
+  TYPING_ROUND_END: 'typing_round_end',
 } as const;
 
 // 서버에서 클라이언트로 보내는 이벤트 타입 맵 (실제 사용되는 것만)
@@ -61,10 +105,19 @@ export interface ServerToClientEvents {
   [SOCKET_EVENTS.CARDS_REVEALED]: (data: any) => void;
   [SOCKET_EVENTS.ROUND_RESET]: (data: any) => void;
   [SOCKET_EVENTS.REVEAL_COUNTDOWN]: (data: RevealCountdownEvent) => void;
-  
+
   // 시스템
   [SOCKET_EVENTS.ERROR]: (error: { code: string; message: string; details?: any }) => void;
   [SOCKET_EVENTS.PONG]: () => void;
+
+  // 타자 게임 이벤트
+  [SOCKET_EVENTS.TYPING_ROOM_UPDATE]: (data: TypingRoomUpdateEvent) => void;
+  [SOCKET_EVENTS.TYPING_COUNTDOWN]: (data: TypingCountdownEvent) => void;
+  [SOCKET_EVENTS.TYPING_ROUND_START]: (data: TypingRoundStartEvent) => void;
+  [SOCKET_EVENTS.TYPING_PROGRESS]: (data: TypingProgressEvent) => void;
+  [SOCKET_EVENTS.TYPING_FIRST_FINISH]: (data: TypingFirstFinishEvent) => void;
+  [SOCKET_EVENTS.TYPING_PLAYER_FINISH]: (data: TypingPlayerFinishEvent) => void;
+  [SOCKET_EVENTS.TYPING_ROUND_END]: (data: TypingRoundEndEvent) => void;
 }
 
 // 클라이언트에서 서버로 보내는 이벤트 타입 맵 (실제 사용되는 것만)
@@ -112,6 +165,35 @@ export interface ClientToServerEvents {
   
   // 시스템
   [SOCKET_EVENTS.PING]: () => void;
+
+  // 타자 게임 이벤트
+  [SOCKET_EVENTS.TYPING_CREATE_ROOM]: (
+    data: CreateTypingRoomPayload,
+    callback: (response: CreateTypingRoomResponse) => void
+  ) => void;
+  [SOCKET_EVENTS.TYPING_JOIN_ROOM]: (
+    data: JoinTypingRoomPayload,
+    callback: (response: JoinTypingRoomResponse) => void
+  ) => void;
+  [SOCKET_EVENTS.TYPING_LEAVE_ROOM]: (
+    data: LeaveTypingRoomPayload,
+    callback: (response: ApiResponse) => void
+  ) => void;
+  [SOCKET_EVENTS.TYPING_GET_ROOM_LIST]: (
+    callback: (response: ApiResponse<TypingRoomListItem[]>) => void
+  ) => void;
+  [SOCKET_EVENTS.TYPING_START_GAME]: (
+    data: StartTypingGamePayload,
+    callback: (response: StartTypingGameResponse) => void
+  ) => void;
+  [SOCKET_EVENTS.TYPING_INPUT]: (
+    data: TypingInputPayload,
+    callback: (response: TypingInputResponse) => void
+  ) => void;
+  [SOCKET_EVENTS.TYPING_SUBMIT]: (
+    data: TypingSubmitPayload,
+    callback: (response: TypingSubmitResponse) => void
+  ) => void;
 }
 
  

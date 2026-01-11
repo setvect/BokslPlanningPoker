@@ -80,4 +80,70 @@ export const CLIENT_CONFIG = {
   PRODUCTION_SOCKET_URL: '', // 클라이언트에서 빈 문자열이면 현재 origin 사용
 } as const;
 
+// ======================================
+// 타자 게임 설정 상수
+// ======================================
+
+export const TYPING_GAME_CONFIG = {
+  // 방 관련
+  MAX_PLAYERS_PER_ROOM: 20,
+  MIN_PLAYERS_FOR_GAME: 1,      // 혼자 연습 가능
+
+  // 시간 설정 (초 단위)
+  COUNTDOWN_SECONDS: 3,          // 게임 시작 카운트다운
+  FIRST_FINISH_COUNTDOWN: 5,     // 1등 완료 후 대기 시간
+  NEXT_ROUND_DELAY: 3,           // 라운드 종료 후 다음 라운드 대기
+
+  // 문장 관련
+  MAX_SENTENCE_LENGTH: 50,       // 문장 최대 길이
+
+  // 방 정리
+  ROOM_INACTIVE_TIMEOUT: 60,     // 비활성 방 타임아웃 (분)
+
+  // 진행 상황 업데이트 간격 (ms)
+  PROGRESS_BROADCAST_INTERVAL: 100,
+
+  // 복사 붙여넣기 감지 기준
+  PASTE_DETECTION_THRESHOLD: 3,  // 한 번에 3글자 이상 증가 시 붙여넣기로 판단
+} as const;
+
+// 타자 게임 에러 코드
+export const TYPING_ERROR_CODES = {
+  ROOM_NOT_FOUND: 'TYPING_ROOM_NOT_FOUND',
+  ROOM_FULL: 'TYPING_ROOM_FULL',
+  GAME_IN_PROGRESS: 'TYPING_GAME_IN_PROGRESS',
+  GAME_NOT_STARTED: 'TYPING_GAME_NOT_STARTED',
+  NOT_ENOUGH_PLAYERS: 'TYPING_NOT_ENOUGH_PLAYERS',
+  INVALID_INPUT: 'TYPING_INVALID_INPUT',
+  PASTE_DETECTED: 'TYPING_PASTE_DETECTED',
+  PLAYER_NOT_FOUND: 'TYPING_PLAYER_NOT_FOUND',
+  ALREADY_FINISHED: 'TYPING_ALREADY_FINISHED',
+  HAS_ERRORS: 'TYPING_HAS_ERRORS',
+  IS_SPECTATOR: 'TYPING_IS_SPECTATOR',
+} as const;
+
+// 타자 게임 에러 메시지 (한국어)
+export const TYPING_ERROR_MESSAGES: Record<string, string> = {
+  [TYPING_ERROR_CODES.ROOM_NOT_FOUND]: '타자 게임 방을 찾을 수 없습니다.',
+  [TYPING_ERROR_CODES.ROOM_FULL]: '방이 가득 찼습니다.',
+  [TYPING_ERROR_CODES.GAME_IN_PROGRESS]: '게임이 진행 중입니다. 다음 라운드부터 참여 가능합니다.',
+  [TYPING_ERROR_CODES.GAME_NOT_STARTED]: '게임이 시작되지 않았습니다.',
+  [TYPING_ERROR_CODES.NOT_ENOUGH_PLAYERS]: '게임을 시작하려면 최소 1명이 필요합니다.',
+  [TYPING_ERROR_CODES.INVALID_INPUT]: '올바르지 않은 입력입니다.',
+  [TYPING_ERROR_CODES.PASTE_DETECTED]: '복사/붙여넣기는 허용되지 않습니다.',
+  [TYPING_ERROR_CODES.PLAYER_NOT_FOUND]: '플레이어를 찾을 수 없습니다.',
+  [TYPING_ERROR_CODES.ALREADY_FINISHED]: '이미 완료했습니다.',
+  [TYPING_ERROR_CODES.HAS_ERRORS]: '오타가 있습니다. 수정 후 다시 시도해주세요.',
+  [TYPING_ERROR_CODES.IS_SPECTATOR]: '관전 중입니다. 다음 라운드부터 참여 가능합니다.',
+} as const;
+
+// 타자 게임 로컬 스토리지 키
+export const TYPING_STORAGE_KEYS = {
+  USER_NAME: 'typing_game_user_name',
+  CURRENT_ROOM: 'typing_game_current_room',
+} as const;
+
+// 복사 방지용 특수 문자 (띄어쓰기 대신 표시)
+export const TYPING_SPECIAL_CHARS = ['·', '•', '‧', '∙', '⋅'] as const;
+
  

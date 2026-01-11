@@ -104,102 +104,131 @@ export default function MainPage({ onCreateRoom, onJoinRoom, error, onClearError
           </div>
         )}
 
-        {/* 액션 카드들 */}
-        <div className="grid md:grid-cols-2 gap-8 max-w-2xl mx-auto">
-          {/* 방 생성 */}
-          <div className="bg-white dark:bg-dark-800 rounded-xl p-8 shadow-lg border-2 border-gray-200 dark:border-dark-600 hover:border-primary-400 dark:hover:border-primary-500 transition-colors">
-            <div className="text-4xl mb-4">🏠</div>
-            <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
-              새 방 만들기
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              플래닝 포커 방을 만들어보세요.
-            </p>
-            
-            <form onSubmit={handleCreateRoom} className="space-y-4">
-              <input
-                type="text"
-                placeholder="방 이름을 입력하세요"
-                value={roomName}
-                onChange={(e) => setRoomName(e.target.value)}
-                className="input"
-                maxLength={50}
-                required
-              />
-              <button
-                type="submit"
-                className="btn btn-primary w-full"
-                disabled={!roomName.trim()}
-              >
-                방 만들기
-              </button>
-            </form>
-          </div>
+        {/* 플래닝 포커 섹션 */}
+        <div className="mb-12">
+          <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-6">
+            🃏 플래닝 포커
+          </h2>
+          <div className="grid md:grid-cols-2 gap-8 max-w-2xl mx-auto">
+            {/* 방 생성 */}
+            <div className="bg-white dark:bg-dark-800 rounded-xl p-8 shadow-lg border-2 border-gray-200 dark:border-dark-600 hover:border-primary-400 dark:hover:border-primary-500 transition-colors">
+              <div className="text-4xl mb-4">🏠</div>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+                새 방 만들기
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                플래닝 포커 방을 만들어보세요.
+              </p>
 
-          {/* 활성 방 목록 */}
-          <div className="bg-white dark:bg-dark-800 rounded-xl p-8 shadow-lg border-2 border-gray-200 dark:border-dark-600">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <div className="text-4xl">📋</div>
-                <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                  활성 방 목록
-                </h2>
-              </div>
-              <button
-                onClick={loadRoomList}
-                disabled={refreshing}
-                className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 disabled:opacity-50"
-                title="새로고침"
-              >
-                {refreshing ? '🔄' : '↻'}
-              </button>
+              <form onSubmit={handleCreateRoom} className="space-y-4">
+                <input
+                  type="text"
+                  placeholder="방 이름을 입력하세요"
+                  value={roomName}
+                  onChange={(e) => setRoomName(e.target.value)}
+                  className="input"
+                  maxLength={50}
+                  required
+                />
+                <button
+                  type="submit"
+                  className="btn btn-primary w-full"
+                  disabled={!roomName.trim()}
+                >
+                  방 만들기
+                </button>
+              </form>
             </div>
-            
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              현재 활성화된 플래닝 포커 세션에 참여하세요
-            </p>
-            
-            {loading ? (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary-500 border-t-transparent mx-auto mb-2"></div>
-                <p className="text-gray-500 dark:text-gray-400 text-sm">로딩 중...</p>
+
+            {/* 활성 방 목록 */}
+            <div className="bg-white dark:bg-dark-800 rounded-xl p-8 shadow-lg border-2 border-gray-200 dark:border-dark-600">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <div className="text-4xl">📋</div>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                    활성 방 목록
+                  </h3>
+                </div>
+                <button
+                  onClick={loadRoomList}
+                  disabled={refreshing}
+                  className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 disabled:opacity-50"
+                  title="새로고침"
+                >
+                  {refreshing ? '🔄' : '↻'}
+                </button>
               </div>
-            ) : roomList.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-gray-500 dark:text-gray-400 text-sm">현재 활성화된 방이 없습니다</p>
-                <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">새 방을 만들어보세요!</p>
-              </div>
-            ) : (
-              <div className="space-y-3 max-h-64 overflow-y-auto scrollbar-thin">
-                {roomList.map((room) => (
-                  <div
-                    key={room.id}
-                    className="flex items-center justify-between p-3 bg-gray-50 dark:bg-dark-700 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-600 transition-colors cursor-pointer"
-                    onClick={() => onJoinRoom(room.id, room.name)}
-                  >
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <div className="font-medium text-gray-900 dark:text-gray-100 truncate">
-                        {room.name}
+
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                현재 활성화된 플래닝 포커 세션에 참여하세요
+              </p>
+
+              {loading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary-500 border-t-transparent mx-auto mb-2"></div>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm">로딩 중...</p>
+                </div>
+              ) : roomList.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500 dark:text-gray-400 text-sm">현재 활성화된 방이 없습니다</p>
+                  <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">새 방을 만들어보세요!</p>
+                </div>
+              ) : (
+                <div className="space-y-3 max-h-64 overflow-y-auto scrollbar-thin">
+                  {roomList.map((room) => (
+                    <div
+                      key={room.id}
+                      className="flex items-center justify-between p-3 bg-gray-50 dark:bg-dark-700 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-600 transition-colors cursor-pointer"
+                      onClick={() => onJoinRoom(room.id, room.name)}
+                    >
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="font-medium text-gray-900 dark:text-gray-100 truncate">
+                          {room.name}
+                        </div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                          {room.users.length}명
+                        </div>
                       </div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
-                        {room.users.length}명
+                      <div className="flex items-center gap-2 text-xs">
+                        {room.gameState === 'selecting' ? (
+                          <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 px-2 py-1 rounded">
+                            선택
+                          </span>
+                        ) : (
+                          <span className="bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-300 px-2 py-1 rounded">
+                            공개됨
+                          </span>
+                        )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 text-xs">
-                      {room.gameState === 'selecting' ? (
-                        <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 px-2 py-1 rounded">
-                          선택
-                        </span>
-                      ) : (
-                        <span className="bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-300 px-2 py-1 rounded">
-                          공개됨
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* 타자 게임 섹션 */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-6">
+            ⌨️ 타자 게임
+          </h2>
+          <div className="max-w-2xl mx-auto">
+            <a
+              href="/typing"
+              className="block bg-white dark:bg-dark-800 rounded-xl p-8 shadow-lg border-2 border-gray-200 dark:border-dark-600 hover:border-primary-400 dark:hover:border-primary-500 transition-colors text-center group"
+            >
+              <div className="text-6xl mb-4 group-hover:scale-110 transition-transform">⌨️</div>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                타자 게임 참여하기
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                실시간 멀티플레이어 타자 게임에 참여하세요
+              </p>
+              <span className="inline-block bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-300 px-4 py-2 rounded-lg font-medium">
+                게임 시작 →
+              </span>
+            </a>
           </div>
         </div>
       </div>

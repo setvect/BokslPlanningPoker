@@ -1,0 +1,217 @@
+import { TypingRoomInternal, TypingRoomUtils } from './TypingRoom';
+import { TypingPlayerInternal, TypingPlayerUtils } from './TypingPlayer';
+import { TypingSentence, TypingRoundResult, TypingPlayerRanking, TypingGameState } from '../../../shared/types';
+import { TYPING_GAME_CONFIG, TYPING_SPECIAL_CHARS } from '../../../shared/constants';
+import sentencesData from '../../../shared/data/typing-sentences.json';
+
+// 문장 데이터 타입
+interface SentenceData {
+  id: string;
+  text: string;
+  language: 'ko' | 'en' | 'mixed';
+}
+
+// JSON에서 로드한 문장 데이터 타입 캐스팅
+const sentences: SentenceData[] = sentencesData.sentences as SentenceData[];
+
+// 타자 게임 로직
+export class TypingGame {
+  private room: TypingRoomInternal;
+  private static sentences: SentenceData[] = sentences;
+
+  constructor(room: TypingRoomInternal) {
+    this.room = room;
+  }
+
+  /**
+   * 랜덤 문장 선택 (이전 문장 제외)
+   */
+  static getRandomSentence(excludeId?: string | null): TypingSentence {
+    const available = TypingGame.sentences.filter(s => s.id !== excludeId);
+    const selectedData = available.length > 0
+      ? available[Math.floor(Math.random() * available.length)]
+      : TypingGame.sentences[0];
+
+    return {
+      id: selectedData.id,
+      text: selectedData.text,
+      displayText: TypingGame.addSpecialChars(selectedData.text),
+      language: selectedData.language,
+      length: selectedData.text.length,
+    };
+  }
+
+  /**
+   * 띄어쓰기에 특수 문자 추가 (복사 방지용)
+   */
+  private static addSpecialChars(text: string): string {
+    return text.split(' ').join(` ${TYPING_SPECIAL_CHARS[Math.floor(Math.random() * TYPING_SPECIAL_CHARS.length)]} `);
+  }
+
+  /**
+   * 타이핑 입력 처리
+   */
+  processInput(playerId: string, input: string): {
+    player: TypingPlayerInternal;
+    progress: number;
+    errorPositions: number[];
+  } | null {
+    if (this.room.gameState !== TypingGameState.PLAYING) {
+      return null;
+    }
+
+    const player = this.room.players.get(playerId);
+    if (!player || player.isSpectator || player.isFinished) {
+      return null;
+    }
+
+    const sentence = this.room.currentSentence;
+    if (!sentence) {
+      return null;
+    }
+
+    // 진행률 및 오타 위치 계산
+    const { progress, errorPositions } = this.calculateProgress(input, sentence.text);
+
+    // 참가자 상태 업데이트
+    TypingPlayerUtils.updateInput(player, input, progress);
+
+    return { player, progress, errorPositions };
+  }
+
+  /**
+   * 진행률 및 오타 위치 계산
+   */
+  calculateProgress(input: string, target: string): {
+    progress: number;
+    errorPositions: number[];
+  } {
+    const errorPositions: number[] = [];
+    let correctChars = 0;
+
+    for (let i = 0; i < input.length && i < target.length; i++) {
+      if (input[i] === target[i]) {
+        correctChars++;
+      } else {
+        // 한글 조합 중인지 확인 (초성/중성/종성 범위)
+        const isKoreanComposing = this.isKoreanComposing(input[i]);
+        if (!isKoreanComposing) {
+          errorPositions.push(i);
+        }
+      }
+    }
+
+    // 입력이 타겟보다 길면 초과 부분도 오타로 처리
+    for (let i = target.length; i < input.length; i++) {
+      errorPositions.push(i);
+    }
+
+    const progress = target.length > 0
+      ? Math.min(100, Math.round((correctChars / target.length) * 100))
+      : 0;
+
+    return { progress, errorPositions };
+  }
+
+  /**
+   * 한글 조합 중인지 확인
+   */
+  private isKoreanComposing(char: string): boolean {
+    const code = char.charCodeAt(0);
+    // 한글 자모 (ㄱ-ㅣ): 0x3131-0x3163
+    return code >= 0x3131 && code <= 0x3163;
+  }
+
+  /**
+   * 입력 완료 검증 (오타 없이 완전히 일치하는지)
+   */
+  validateCompletion(input: string): boolean {
+    const sentence = this.room.currentSentence;
+    if (!sentence) {
+      return false;
+    }
+    return input === sentence.text;
+  }
+
+  /**
+   * 오타가 있는지 확인
+   */
+  hasErrors(input: string): boolean {
+    const sentence = this.room.currentSentence;
+    if (!sentence) {
+      return true;
+    }
+
+    const { errorPositions } = this.calculateProgress(input, sentence.text);
+    return errorPositions.length > 0 || input.length !== sentence.text.length;
+  }
+
+  /**
+   * 참가자 완료 처리
+   */
+  markPlayerFinished(playerId: string): {
+    rank: number;
+    timeMs: number;
+    isFirstFinisher: boolean;
+  } | null {
+    const player = this.room.players.get(playerId);
+    if (!player || player.isFinished || player.isSpectator) {
+      return null;
+    }
+
+    const isFirstFinisher = this.room.firstFinisherId === null;
+    const rank = TypingRoomUtils.getNextRank(this.room);
+
+    // 참가자 완료 처리
+    TypingPlayerUtils.markFinished(player, rank);
+
+    // 1등이면 방에 기록
+    if (isFirstFinisher) {
+      TypingRoomUtils.setFirstFinisher(this.room, playerId);
+    }
+
+    // 완료 시간 계산
+    const timeMs = this.room.roundStartedAt && player.finishedAt
+      ? player.finishedAt.getTime() - this.room.roundStartedAt.getTime()
+      : 0;
+
+    return { rank, timeMs, isFirstFinisher };
+  }
+
+  /**
+   * 라운드 결과 계산
+   */
+  calculateRoundResult(): TypingRoundResult {
+    TypingRoomUtils.calculateRankings(this.room);
+
+    const rankings: TypingPlayerRanking[] = Array.from(this.room.players.values())
+      .filter(p => !p.isSpectator)
+      .sort((a, b) => (a.rank || 999) - (b.rank || 999))
+      .map(player => ({
+        playerId: player.id,
+        playerName: player.name,
+        rank: player.rank || 0,
+        finishedAt: player.finishedAt?.toISOString() || null,
+        timeMs: player.finishedAt && this.room.roundStartedAt
+          ? player.finishedAt.getTime() - this.room.roundStartedAt.getTime()
+          : null,
+        isFinished: player.isFinished,
+      }));
+
+    return {
+      roundNumber: this.room.roundNumber,
+      sentence: this.room.currentSentence!,
+      rankings,
+      startedAt: this.room.roundStartedAt?.toISOString() || new Date().toISOString(),
+      endedAt: new Date().toISOString(),
+    };
+  }
+
+  /**
+   * 복사 붙여넣기 감지
+   */
+  static detectPaste(previousInput: string, newInput: string): boolean {
+    // 한 번에 threshold 글자 이상 증가하면 붙여넣기로 판단
+    return newInput.length - previousInput.length > TYPING_GAME_CONFIG.PASTE_DETECTION_THRESHOLD;
+  }
+}

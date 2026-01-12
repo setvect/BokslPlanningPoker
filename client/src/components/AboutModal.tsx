@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState, useRef } from 'react'
 
 interface AboutModalProps {
   isOpen: boolean
@@ -6,6 +6,40 @@ interface AboutModalProps {
 }
 
 export default function AboutModal({ isOpen, onClose }: AboutModalProps) {
+  const [clickCount, setClickCount] = useState(0)
+  const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  // 이미지 클릭 핸들러 (이스터에그)
+  const handleImageClick = () => {
+    setClickCount(prev => prev + 1)
+
+    // 이전 타임아웃 클리어
+    if (clickTimeoutRef.current) {
+      clearTimeout(clickTimeoutRef.current)
+    }
+
+    // 1초 내에 5번 클릭하면 타자 게임으로 이동
+    if (clickCount + 1 >= 5) {
+      window.location.href = '/typing'
+      return
+    }
+
+    // 1초 후 클릭 카운트 리셋
+    clickTimeoutRef.current = setTimeout(() => {
+      setClickCount(0)
+    }, 1000)
+  }
+
+  // 모달이 닫힐 때 클릭 카운트 리셋
+  useEffect(() => {
+    if (!isOpen) {
+      setClickCount(0)
+      if (clickTimeoutRef.current) {
+        clearTimeout(clickTimeoutRef.current)
+      }
+    }
+  }, [isOpen])
+
   // ESC 키로 모달 닫기
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -43,12 +77,14 @@ export default function AboutModal({ isOpen, onClose }: AboutModalProps) {
 
         {/* 앱 정보 */}
         <div className="flex items-start gap-6 mb-6">
-          {/* 앱 아이콘 */}
+          {/* 앱 아이콘 (5번 클릭 시 타자 게임 이스터에그) */}
           <div className="flex-shrink-0">
-            <img 
-              src="/images/about.png" 
-              alt="복슬 플래닝 포커" 
-              className="w-16 h-16 rounded-full object-cover border-2 border-gray-200 dark:border-dark-600"
+            <img
+              src="/images/about.png"
+              alt="복슬 플래닝 포커"
+              className="w-16 h-16 rounded-full object-cover border-2 border-gray-200 dark:border-dark-600 cursor-pointer select-none"
+              onClick={handleImageClick}
+              draggable={false}
             />
           </div>
 

@@ -208,29 +208,6 @@ export default function MainPage({ onCreateRoom, onJoinRoom, error, onClearError
           </div>
         </div>
 
-        {/* 타자 게임 섹션 */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-6">
-            ⌨️ 타자 게임
-          </h2>
-          <div className="max-w-2xl mx-auto">
-            <a
-              href="/typing"
-              className="block bg-white dark:bg-dark-800 rounded-xl p-8 shadow-lg border-2 border-gray-200 dark:border-dark-600 hover:border-primary-400 dark:hover:border-primary-500 transition-colors text-center group"
-            >
-              <div className="text-6xl mb-4 group-hover:scale-110 transition-transform">⌨️</div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                타자 게임 참여하기
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
-                실시간 멀티플레이어 타자 게임에 참여하세요
-              </p>
-              <span className="inline-block bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-300 px-4 py-2 rounded-lg font-medium">
-                게임 시작 →
-              </span>
-            </a>
-          </div>
-        </div>
       </div>
       
       {/* 정보 모달 */}

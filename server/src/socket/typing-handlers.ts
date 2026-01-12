@@ -557,25 +557,42 @@ export function setupTypingHandlers(io: Server) {
 
           console.log(`🏆 1등 완료: ${player.name} (${finishResult.timeMs}ms)`);
 
-          // 5초 후 라운드 종료
-          room.roundEndTimer = setTimeout(() => {
-            // 라운드 종료
-            room.gameState = TypingGameState.ROUND_END;
-            const roundResult = game.calculateRoundResult();
+          // 5초 카운트다운 (다른 사용자들이 계속 입력 가능)
+          let countdown = TYPING_GAME_CONFIG.FIRST_FINISH_COUNTDOWN;
 
-            io.to(room.id).emit(SOCKET_EVENTS.TYPING_ROUND_END, {
-              roomId: room.id,
-              result: roundResult,
-              nextRoundIn: TYPING_GAME_CONFIG.NEXT_ROUND_DELAY,
-            } as TypingRoundEndEvent);
+          const countdownInterval = setInterval(() => {
+            countdown--;
 
-            console.log(`🏁 라운드 ${room.roundNumber} 종료: 방 ${room.id}`);
+            if (countdown > 0) {
+              // 카운트다운 전송
+              io.to(room.id).emit(SOCKET_EVENTS.TYPING_COUNTDOWN, {
+                roomId: room.id,
+                count: countdown,
+                type: 'finish',
+              } as TypingCountdownEvent);
+            } else {
+              clearInterval(countdownInterval);
 
-            // 3초 후 다음 라운드 시작
-            room.nextRoundTimer = setTimeout(() => {
-              startNextRound(room, io);
-            }, TYPING_GAME_CONFIG.NEXT_ROUND_DELAY * 1000);
-          }, TYPING_GAME_CONFIG.FIRST_FINISH_COUNTDOWN * 1000);
+              // 라운드 종료
+              room.gameState = TypingGameState.ROUND_END;
+              const roundResult = game.calculateRoundResult();
+
+              io.to(room.id).emit(SOCKET_EVENTS.TYPING_ROUND_END, {
+                roomId: room.id,
+                result: roundResult,
+                nextRoundIn: TYPING_GAME_CONFIG.NEXT_ROUND_DELAY,
+              } as TypingRoundEndEvent);
+
+              console.log(`🏁 라운드 ${room.roundNumber} 종료: 방 ${room.id}`);
+
+              // NEXT_ROUND_DELAY초 후 다음 라운드 시작
+              room.nextRoundTimer = setTimeout(() => {
+                startGameCountdown(room, io);
+              }, TYPING_GAME_CONFIG.NEXT_ROUND_DELAY * 1000);
+            }
+          }, 1000);
+
+          room.roundEndTimer = countdownInterval as unknown as NodeJS.Timeout;
         }
 
         console.log(`✅ 타이핑 완료: ${player.name} - ${finishResult.rank}등 (${finishResult.timeMs}ms)`);

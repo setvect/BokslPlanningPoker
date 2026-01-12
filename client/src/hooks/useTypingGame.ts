@@ -133,10 +133,15 @@ export function useTypingGame(options: UseTypingGameOptions = {}) {
       if (input[i] === target[i]) {
         correctChars++;
       } else {
-        // 같은 위치에서 글자가 변경 중인지 확인 (한글 조합 중)
+        // 한글 조합 중인지 확인:
+        // 1. 이전 입력값이 존재하고
+        // 2. 입력 길이가 같고 (글자가 추가/삭제되지 않음)
+        // 3. 마지막 글자이고
+        // 4. 이전 글자와 현재 글자가 다름 (실제로 변경 중)
         const isComposing = i < previousInput.length &&
                            previousInput.length === input.length &&
-                           i === input.length - 1;
+                           i === input.length - 1 &&
+                           previousInput[i] !== input[i];
 
         if (!isComposing) {
           errorPositions.push(i);
@@ -403,6 +408,16 @@ export function useTypingGame(options: UseTypingGameOptions = {}) {
         if (prev.roomId !== data.roomId) {
           return prev;
         }
+
+        // 'finish' 타입 카운트다운은 gameState를 변경하지 않음 (PLAYING 상태 유지)
+        if (data.type === 'finish') {
+          return {
+            ...prev,
+            countdown: data.count,
+          };
+        }
+
+        // 'game_start' 또는 'next_round' 타입은 COUNTDOWN 상태로 전환
         return {
           ...prev,
           countdown: data.count,

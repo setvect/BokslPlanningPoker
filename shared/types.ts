@@ -322,7 +322,7 @@ export interface TypingRoomUpdateEvent {
 export interface TypingCountdownEvent {
   roomId: string;
   count: number;
-  type: 'game_start' | 'round_end' | 'next_round';
+  type: 'game_start' | 'finish' | 'next_round';
 }
 
 // 라운드 시작 (문장 제시)

@@ -32,11 +32,8 @@ export function TypingCreateRoom({ onCreate, loading, error }: TypingCreateRoomP
     <div className="bg-white dark:bg-dark-800 rounded-xl p-8 shadow-lg border-2 border-gray-200 dark:border-dark-600 hover:border-primary-400 dark:hover:border-primary-500 transition-colors">
       <div className="text-4xl mb-4">⌨️</div>
       <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
-        타자 게임 방 만들기
+        게임 방 만들기
       </h2>
-      <p className="text-gray-600 dark:text-gray-400 mb-6">
-        타자 게임 방을 만들어보세요.
-      </p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <input

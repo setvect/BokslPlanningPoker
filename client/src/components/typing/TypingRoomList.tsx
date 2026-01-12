@@ -53,7 +53,7 @@ export function TypingRoomList({
         <div className="flex items-center gap-2">
           <div className="text-4xl">📋</div>
           <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-            타자 게임 방 목록
+            게임 방 목록
           </h2>
         </div>
         <button
@@ -65,10 +65,6 @@ export function TypingRoomList({
           {refreshing ? '🔄' : '↻'}
         </button>
       </div>
-
-      <p className="text-gray-600 dark:text-gray-400 mb-6">
-        현재 활성화된 타자 게임 방에 참여하세요
-      </p>
 
       {loading ? (
         <div className="text-center py-8">

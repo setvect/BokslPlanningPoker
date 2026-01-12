@@ -114,10 +114,10 @@ export function TypingMainPage() {
         {/* 헤더 */}
         <div className="mb-12">
           <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-            ⌨️ 타자 게임
+            천하제일 타자대회
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            실시간 멀티플레이어 타자 게임
+            천하를 호령하는 타자의 고수가 되어보세요!
           </p>
         </div>
 

@@ -31,23 +31,76 @@ export function TypingSentenceDisplay({
           className: 'text-gray-300 dark:text-gray-600',
           isSpecial: true,
         });
+      } else if (displayChar === ' ') {
+        // 공백 처리: 특수문자 뒤의 공백인지 확인
+        const prevChar = i > 0 ? displayText[i - 1] : null;
+        const isPrevSpecial = prevChar && isSpecialCharacter(prevChar);
+
+        // 특수문자 바로 뒤의 공백만 무시 (특수문자 앞의 공백은 실제 띄어쓰기)
+        if (isPrevSpecial) {
+          // 특수문자 바로 뒤의 공백 → 장식용이므로 무시
+          result.push({
+            char: displayChar,
+            className: 'text-gray-300 dark:text-gray-600',
+            isSpecial: true,
+          });
+        } else {
+          // 특수문자 앞의 공백 또는 일반 공백 → 실제 띄어쓰기
+          if (targetIndex >= targetText.length) {
+            result.push({
+              char: displayChar,
+              className: 'text-gray-400 dark:text-gray-500',
+              isSpecial: false,
+            });
+            continue;
+          }
+
+          const targetChar = targetText[targetIndex];
+          const inputChar = userInput[targetIndex];
+
+          let className = 'text-gray-400 dark:text-gray-500';
+
+          if (targetIndex < userInput.length) {
+            if (errorPositions.includes(targetIndex)) {
+              className = 'text-red-500 dark:text-red-400 bg-red-100 dark:bg-red-900/30';
+            } else if (inputChar === targetChar) {
+              className = 'text-green-600 dark:text-green-400';
+            }
+          } else if (targetIndex === userInput.length) {
+            className = 'text-gray-700 dark:text-gray-300 border-b-2 border-blue-500';
+          }
+
+          result.push({
+            char: displayChar,
+            className,
+            isSpecial: false,
+          });
+
+          targetIndex++;
+        }
       } else {
-        // 일반 문자
+        // 일반 문자 (공백이 아닌 문자)
+        if (targetIndex >= targetText.length) {
+          result.push({
+            char: displayChar,
+            className: 'text-gray-400 dark:text-gray-500',
+            isSpecial: false,
+          });
+          continue;
+        }
+
         const targetChar = targetText[targetIndex];
         const inputChar = userInput[targetIndex];
 
-        let className = 'text-gray-400 dark:text-gray-500'; // 기본: 아직 입력하지 않은 문자
+        let className = 'text-gray-400 dark:text-gray-500';
 
         if (targetIndex < userInput.length) {
           if (errorPositions.includes(targetIndex)) {
-            // 오타
             className = 'text-red-500 dark:text-red-400 bg-red-100 dark:bg-red-900/30';
           } else if (inputChar === targetChar) {
-            // 정확히 입력됨
             className = 'text-green-600 dark:text-green-400';
           }
         } else if (targetIndex === userInput.length) {
-          // 현재 입력 위치 (커서)
           className = 'text-gray-700 dark:text-gray-300 border-b-2 border-blue-500';
         }
 

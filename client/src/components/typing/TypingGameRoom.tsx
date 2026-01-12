@@ -44,7 +44,7 @@ export function TypingGameRoom({ game, onLeave }: TypingGameRoomProps) {
   const isInputComplete = game.sentence !== null && game.input === game.sentence.text;
 
   return (
-    <div className="max-w-4xl mx-auto min-h-screen flex flex-col bg-gradient-to-br from-primary-50 to-primary-100 dark:from-dark-900 dark:to-dark-800 p-4">
+    <div className="max-w-7xl mx-auto min-h-screen flex flex-col bg-gradient-to-br from-primary-50 to-primary-100 dark:from-dark-900 dark:to-dark-800 p-4">
       {/* 헤더 */}
       <div className="bg-white dark:bg-dark-800 rounded-xl p-4 shadow-lg mb-4 border border-gray-200 dark:border-dark-600">
         <div className="flex justify-between items-center gap-3">

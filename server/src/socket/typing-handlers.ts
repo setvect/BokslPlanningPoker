@@ -585,10 +585,41 @@ export function setupTypingHandlers(io: Server) {
 
               console.log(`🏁 라운드 ${room.roundNumber} 종료: 방 ${room.id}`);
 
-              // NEXT_ROUND_DELAY초 후 다음 라운드 시작
-              room.nextRoundTimer = setTimeout(() => {
-                startGameCountdown(room, io);
-              }, TYPING_GAME_CONFIG.NEXT_ROUND_DELAY * 1000);
+              // 다음 라운드 카운트다운 (3, 2, 1)
+              let nextRoundCountdown = TYPING_GAME_CONFIG.NEXT_ROUND_DELAY;
+
+              const nextRoundInterval = setInterval(() => {
+                nextRoundCountdown--;
+
+                if (nextRoundCountdown > 0) {
+                  // 카운트다운 전송
+                  io.to(room.id).emit(SOCKET_EVENTS.TYPING_COUNTDOWN, {
+                    roomId: room.id,
+                    count: nextRoundCountdown,
+                    type: 'next_round',
+                  } as TypingCountdownEvent);
+                } else {
+                  clearInterval(nextRoundInterval);
+
+                  // 다음 라운드 준비
+                  const sentence = TypingGame.getRandomSentence(room.lastSentenceId);
+                  TypingRoomUtils.resetForNewRound(room, sentence);
+
+                  // 바로 라운드 시작 (COUNTDOWN 상태 없이)
+                  TypingRoomUtils.startRound(room);
+
+                  io.to(room.id).emit(SOCKET_EVENTS.TYPING_ROUND_START, {
+                    roomId: room.id,
+                    sentence: room.currentSentence,
+                    roundNumber: room.roundNumber,
+                    startedAt: room.roundStartedAt?.toISOString() || new Date().toISOString(),
+                  } as TypingRoundStartEvent);
+
+                  console.log(`🎮 타자 게임 라운드 ${room.roundNumber} 시작: 방 ${room.id}`);
+                }
+              }, 1000);
+
+              room.nextRoundTimer = nextRoundInterval as unknown as NodeJS.Timeout;
             }
           }, 1000);
 

@@ -99,19 +99,7 @@ export class TypingGame {
       if (input[i] === target[i]) {
         correctChars++;
       } else {
-        // 한글 조합 중인지 확인:
-        // 1. 이전 입력값이 존재하고
-        // 2. 입력 길이가 같고 (글자가 추가/삭제되지 않음)
-        // 3. 마지막 글자이고
-        // 4. 이전 글자와 현재 글자가 다름 (실제로 변경 중)
-        const isComposing = i < previousInput.length &&
-                           previousInput.length === input.length &&
-                           i === input.length - 1 &&
-                           previousInput[i] !== input[i];
-
-        if (!isComposing) {
-          errorPositions.push(i);
-        }
+        errorPositions.push(i);
       }
     }
 

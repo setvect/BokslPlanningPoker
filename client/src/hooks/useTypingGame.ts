@@ -122,7 +122,7 @@ export function useTypingGame(options: UseTypingGameOptions = {}) {
   }, []);
 
   // 진행률 및 오타 위치 계산 (클라이언트 측)
-  const calculateProgress = useCallback((input: string, target: string, previousInput: string): {
+  const calculateProgress = useCallback((input: string, target: string): {
     progress: number;
     errorPositions: number[];
   } => {
@@ -133,19 +133,7 @@ export function useTypingGame(options: UseTypingGameOptions = {}) {
       if (input[i] === target[i]) {
         correctChars++;
       } else {
-        // 한글 조합 중인지 확인:
-        // 1. 이전 입력값이 존재하고
-        // 2. 입력 길이가 같고 (글자가 추가/삭제되지 않음)
-        // 3. 마지막 글자이고
-        // 4. 이전 글자와 현재 글자가 다름 (실제로 변경 중)
-        const isComposing = i < previousInput.length &&
-                           previousInput.length === input.length &&
-                           i === input.length - 1 &&
-                           previousInput[i] !== input[i];
-
-        if (!isComposing) {
-          errorPositions.push(i);
-        }
+        errorPositions.push(i);
       }
     }
 
@@ -295,7 +283,7 @@ export function useTypingGame(options: UseTypingGameOptions = {}) {
 
     // 클라이언트 측 진행률 및 오타 계산 (Optimistic Update)
     if (state.sentence) {
-      const { progress, errorPositions } = calculateProgress(newInput, state.sentence.text, previousInputRef.current);
+      const { progress, errorPositions } = calculateProgress(newInput, state.sentence.text);
       setState(prev => ({
         ...prev,
         input: newInput,
@@ -417,7 +405,15 @@ export function useTypingGame(options: UseTypingGameOptions = {}) {
           };
         }
 
-        // 'game_start' 또는 'next_round' 타입은 COUNTDOWN 상태로 전환
+        // 'next_round' 타입 카운트다운은 gameState를 변경하지 않음 (ROUND_END 상태 유지)
+        if (data.type === 'next_round') {
+          return {
+            ...prev,
+            countdown: data.count,
+          };
+        }
+
+        // 'game_start' 타입은 COUNTDOWN 상태로 전환
         return {
           ...prev,
           countdown: data.count,

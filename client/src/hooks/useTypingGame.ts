@@ -122,7 +122,7 @@ export function useTypingGame(options: UseTypingGameOptions = {}) {
   }, []);
 
   // 진행률 및 오타 위치 계산 (클라이언트 측)
-  const calculateProgress = useCallback((input: string, target: string): {
+  const calculateProgress = useCallback((input: string, target: string, previousInput: string): {
     progress: number;
     errorPositions: number[];
   } => {
@@ -133,9 +133,12 @@ export function useTypingGame(options: UseTypingGameOptions = {}) {
       if (input[i] === target[i]) {
         correctChars++;
       } else {
-        // 한글 조합 중인지 확인 (초성/중성/종성 범위)
-        const isKoreanComposing = isKoreanJamo(input[i]);
-        if (!isKoreanComposing) {
+        // 같은 위치에서 글자가 변경 중인지 확인 (한글 조합 중)
+        const isComposing = i < previousInput.length &&
+                           previousInput.length === input.length &&
+                           i === input.length - 1;
+
+        if (!isComposing) {
           errorPositions.push(i);
         }
       }
@@ -152,13 +155,6 @@ export function useTypingGame(options: UseTypingGameOptions = {}) {
 
     return { progress, errorPositions };
   }, []);
-
-  // 한글 자모인지 확인
-  const isKoreanJamo = (char: string): boolean => {
-    const code = char.charCodeAt(0);
-    // 한글 자모 (ㄱ-ㅣ): 0x3131-0x3163
-    return code >= 0x3131 && code <= 0x3163;
-  };
 
   // 방 생성
   const createRoom = useCallback(async (roomName: string, playerName: string): Promise<void> => {
@@ -292,11 +288,9 @@ export function useTypingGame(options: UseTypingGameOptions = {}) {
       return; // 붙여넣기는 무시
     }
 
-    previousInputRef.current = newInput;
-
     // 클라이언트 측 진행률 및 오타 계산 (Optimistic Update)
     if (state.sentence) {
-      const { progress, errorPositions } = calculateProgress(newInput, state.sentence.text);
+      const { progress, errorPositions } = calculateProgress(newInput, state.sentence.text, previousInputRef.current);
       setState(prev => ({
         ...prev,
         input: newInput,
@@ -304,6 +298,8 @@ export function useTypingGame(options: UseTypingGameOptions = {}) {
         errorPositions,
       }));
     }
+
+    previousInputRef.current = newInput;
 
     // 서버에 입력 전송
     try {

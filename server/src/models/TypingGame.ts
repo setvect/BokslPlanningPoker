@@ -70,8 +70,14 @@ export class TypingGame {
       return null;
     }
 
+    // 이전 입력값 가져오기
+    const previousInput = this.room.previousInputs.get(playerId) || '';
+
     // 진행률 및 오타 위치 계산
-    const { progress, errorPositions } = this.calculateProgress(input, sentence.text);
+    const { progress, errorPositions } = this.calculateProgress(input, sentence.text, previousInput);
+
+    // 현재 입력값을 이전 입력값으로 저장
+    this.room.previousInputs.set(playerId, input);
 
     // 참가자 상태 업데이트
     TypingPlayerUtils.updateInput(player, input, progress);
@@ -82,7 +88,7 @@ export class TypingGame {
   /**
    * 진행률 및 오타 위치 계산
    */
-  calculateProgress(input: string, target: string): {
+  calculateProgress(input: string, target: string, previousInput: string): {
     progress: number;
     errorPositions: number[];
   } {
@@ -93,9 +99,12 @@ export class TypingGame {
       if (input[i] === target[i]) {
         correctChars++;
       } else {
-        // 한글 조합 중인지 확인 (초성/중성/종성 범위)
-        const isKoreanComposing = this.isKoreanComposing(input[i]);
-        if (!isKoreanComposing) {
+        // 같은 위치에서 글자가 변경 중인지 확인 (한글 조합 중)
+        const isComposing = i < previousInput.length &&
+                           previousInput.length === input.length &&
+                           i === input.length - 1;
+
+        if (!isComposing) {
           errorPositions.push(i);
         }
       }
@@ -114,15 +123,6 @@ export class TypingGame {
   }
 
   /**
-   * 한글 조합 중인지 확인
-   */
-  private isKoreanComposing(char: string): boolean {
-    const code = char.charCodeAt(0);
-    // 한글 자모 (ㄱ-ㅣ): 0x3131-0x3163
-    return code >= 0x3131 && code <= 0x3163;
-  }
-
-  /**
    * 입력 완료 검증 (오타 없이 완전히 일치하는지)
    */
   validateCompletion(input: string): boolean {
@@ -136,13 +136,14 @@ export class TypingGame {
   /**
    * 오타가 있는지 확인
    */
-  hasErrors(input: string): boolean {
+  hasErrors(playerId: string, input: string): boolean {
     const sentence = this.room.currentSentence;
     if (!sentence) {
       return true;
     }
 
-    const { errorPositions } = this.calculateProgress(input, sentence.text);
+    const previousInput = this.room.previousInputs.get(playerId) || '';
+    const { errorPositions } = this.calculateProgress(input, sentence.text, previousInput);
     return errorPositions.length > 0 || input.length !== sentence.text.length;
   }
 

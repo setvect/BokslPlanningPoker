@@ -20,6 +20,7 @@ export interface TypingRoomInternal {
   firstFinisherId: string | null;           // 1등 완료자 ID
   firstFinishedAt: Date | null;             // 1등 완료 시간
   lastSentenceId: string | null;            // 이전 문장 ID (연속 방지)
+  previousInputs: Map<string, string>;      // 이전 입력값 (playerId -> previousInput)
 
   // 타이머 참조
   countdownTimer: NodeJS.Timeout | null;
@@ -54,6 +55,7 @@ export class TypingRoomUtils {
       firstFinisherId: null,
       firstFinishedAt: null,
       lastSentenceId: null,
+      previousInputs: new Map(),
       countdownTimer: null,
       roundEndTimer: null,
       nextRoundTimer: null,
@@ -95,6 +97,7 @@ export class TypingRoomUtils {
     room.firstFinisherId = null;
     room.firstFinishedAt = null;
     room.lastSentenceId = sentence.id;
+    room.previousInputs.clear(); // 이전 입력값 초기화
 
     // 모든 참가자 상태 초기화
     room.players.forEach(player => {

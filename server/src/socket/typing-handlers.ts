@@ -515,7 +515,7 @@ export function setupTypingHandlers(io: Server) {
         const game = new TypingGame(room);
 
         // 오타 확인
-        if (game.hasErrors(player.currentInput)) {
+        if (game.hasErrors(player.id, player.currentInput)) {
           return callback({
             success: false,
             error: { code: TYPING_ERROR_CODES.HAS_ERRORS, message: TYPING_ERROR_MESSAGES[TYPING_ERROR_CODES.HAS_ERRORS] },

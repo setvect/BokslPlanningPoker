@@ -156,10 +156,9 @@ export enum TypingGameState {
 
 // 타자 문장
 export interface TypingSentence {
-  id: string;
+  id: number;                           // 문장 ID (라인 번호)
   text: string;                         // 원본 문장
   displayText: string;                  // 특수문자가 포함된 표시용 문장
-  language: 'ko' | 'en' | 'mixed';      // 언어
   length: number;                       // 문자 수
 }
 
@@ -199,7 +198,7 @@ export interface TypingRoom {
   roundStartedAt: string | null;
   firstFinisherId: string | null;
   firstFinishedAt: string | null;
-  lastSentenceId: string | null;  // 연속 문장 방지용
+  lastSentenceId: number | null;  // 연속 문장 방지용
 }
 
 // 라운드 결과

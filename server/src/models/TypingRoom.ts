@@ -19,7 +19,7 @@ export interface TypingRoomInternal {
   roundStartedAt: Date | null;              // 라운드 시작 시간
   firstFinisherId: string | null;           // 1등 완료자 ID
   firstFinishedAt: Date | null;             // 1등 완료 시간
-  lastSentenceId: string | null;            // 이전 문장 ID (연속 방지)
+  lastSentenceId: number | null;            // 이전 문장 ID (연속 방지)
   previousInputs: Map<string, string>;      // 이전 입력값 (playerId -> previousInput)
 
   // 타이머 참조
@@ -217,7 +217,7 @@ export class TypingRoomUtils {
     roundStartedAt: string | null;
     firstFinisherId: string | null;
     firstFinishedAt: string | null;
-    lastSentenceId: string | null;
+    lastSentenceId: number | null;
   } {
     return {
       id: room.id,

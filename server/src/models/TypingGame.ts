@@ -1,18 +1,31 @@
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { TypingRoomInternal, TypingRoomUtils } from './TypingRoom';
 import { TypingPlayerInternal, TypingPlayerUtils } from './TypingPlayer';
 import { TypingSentence, TypingRoundResult, TypingPlayerRanking, TypingGameState } from '../../../shared/types';
 import { TYPING_GAME_CONFIG, TYPING_SPECIAL_CHARS } from '../../../shared/constants';
-import sentencesData from '../../../shared/data/typing-sentences.json';
 
 // 문장 데이터 타입
 interface SentenceData {
-  id: string;
+  id: number;
   text: string;
-  language: 'ko' | 'en' | 'mixed';
 }
 
-// JSON에서 로드한 문장 데이터 타입 캐스팅
-const sentences: SentenceData[] = sentencesData.sentences as SentenceData[];
+// 텍스트 파일에서 문장 로드
+function loadSentences(): SentenceData[] {
+  const filePath = join(__dirname, '../../../shared/data/typing-sentences.txt');
+  const content = readFileSync(filePath, 'utf-8');
+  return content
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line.length > 0)
+    .map((text, index) => ({
+      id: index + 1,
+      text,
+    }));
+}
+
+const sentences: SentenceData[] = loadSentences();
 
 // 타자 게임 로직
 export class TypingGame {
@@ -26,7 +39,7 @@ export class TypingGame {
   /**
    * 랜덤 문장 선택 (이전 문장 제외)
    */
-  static getRandomSentence(excludeId?: string | null): TypingSentence {
+  static getRandomSentence(excludeId?: number | null): TypingSentence {
     const available = TypingGame.sentences.filter(s => s.id !== excludeId);
     const selectedData = available.length > 0
       ? available[Math.floor(Math.random() * available.length)]
@@ -36,7 +49,6 @@ export class TypingGame {
       id: selectedData.id,
       text: selectedData.text,
       displayText: TypingGame.addSpecialChars(selectedData.text),
-      language: selectedData.language,
       length: selectedData.text.length,
     };
   }

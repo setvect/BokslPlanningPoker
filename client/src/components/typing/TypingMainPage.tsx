@@ -34,7 +34,8 @@ export function TypingMainPage() {
       setRefreshing(false);
       setLoading(false);
     }
-  }, [game.isConnected, game.getRoomList]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [game.isConnected]);
 
   // 컴포넌트 마운트 시 방 목록 로드
   useEffect(() => {
@@ -43,7 +44,7 @@ export function TypingMainPage() {
     }
   }, [game.isConnected, loadRoomList]);
 
-  // 10초마다 방 목록 자동 새로고침
+  // 2초마다 방 목록 자동 새로고침
   useEffect(() => {
     if (!game.isConnected || game.roomId) {
       return;
@@ -51,7 +52,7 @@ export function TypingMainPage() {
 
     const interval = setInterval(() => {
       loadRoomList();
-    }, 10000);
+    }, 2000);
 
     return () => clearInterval(interval);
   }, [game.isConnected, game.roomId, loadRoomList]);

@@ -446,6 +446,8 @@ export function useTypingGame(options: UseTypingGameOptions = {}) {
           roundResult: null,
           rankings: [],
           playerProgress: new Map(),
+          // 새 라운드 시작 시 관전자 상태 해제 (서버에서도 resetForNewRound로 해제됨)
+          isSpectator: false,
         };
       });
     });

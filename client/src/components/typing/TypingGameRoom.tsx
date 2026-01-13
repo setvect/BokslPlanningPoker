@@ -12,6 +12,10 @@ interface TypingGameRoomProps {
 }
 
 export function TypingGameRoom({ game, onLeave }: TypingGameRoomProps) {
+  // 게임 진행 중에는 관전자도 참가자로 표시 (새 라운드 시작 시 관전자 상태가 해제됨)
+  const isGameInProgress = game.gameState === TypingGameState.PLAYING ||
+                           game.gameState === TypingGameState.ROUND_END;
+
   // 참가자 목록 변환
   const playerProgressList = game.room?.players.map(player => ({
     id: player.id,
@@ -20,11 +24,23 @@ export function TypingGameRoom({ game, onLeave }: TypingGameRoomProps) {
     isFinished: player.id === game.playerId ? game.isFinished : (game.playerProgress.get(player.id)?.isFinished || false),
     rank: player.id === game.playerId ? game.rank : (game.playerProgress.get(player.id)?.rank || null),
     isCurrentUser: player.id === game.playerId,
-  })).filter(p => !game.room?.players.find(rp => rp.id === p.id)?.isSpectator) || [];
+  })).filter(p => {
+    // 게임 진행 중이면 현재 사용자의 관전 상태(game.isSpectator)를 참조
+    if (p.isCurrentUser) {
+      return !game.isSpectator;
+    }
+    // 다른 플레이어는 서버 데이터 참조 (게임 진행 중이면 모두 표시)
+    const serverPlayer = game.room?.players.find(rp => rp.id === p.id);
+    return isGameInProgress || !serverPlayer?.isSpectator;
+  }) || [];
 
-  // 참가자 수 계산
-  const totalPlayers = game.room?.players.filter(p => !p.isSpectator).length || 0;
-  const spectatorCount = game.room?.players.filter(p => p.isSpectator).length || 0;
+  // 참가자 수 계산 (게임 진행 중이면 관전자도 포함)
+  const totalPlayers = isGameInProgress
+    ? (game.room?.players.length || 0) - (game.isSpectator ? 1 : 0)
+    : (game.room?.players.filter(p => !p.isSpectator).length || 0);
+  const spectatorCount = isGameInProgress
+    ? (game.isSpectator ? 1 : 0)
+    : (game.room?.players.filter(p => p.isSpectator).length || 0);
 
   // 카운트다운 타입 결정
   const getCountdownType = () => {
@@ -121,15 +137,6 @@ export function TypingGameRoom({ game, onLeave }: TypingGameRoomProps) {
             {/* 플레이 상태 */}
             {game.gameState === TypingGameState.PLAYING && game.sentence && (
               <div className="flex-1 flex flex-col">
-                {/* 1등 완료 후 카운트다운 표시 */}
-                {game.countdown !== null && (
-                  <div className="mb-4 bg-orange-100 dark:bg-orange-900/20 rounded-lg p-3 text-center">
-                    <span className="text-orange-600 dark:text-orange-400 font-medium">
-                      라운드 종료까지 {game.countdown}초!
-                    </span>
-                  </div>
-                )}
-
                 {/* 문장 표시 */}
                 <TypingSentenceDisplay
                   displayText={game.sentence.displayText}
@@ -152,6 +159,15 @@ export function TypingGameRoom({ game, onLeave }: TypingGameRoomProps) {
                 ) : (
                   <div className="bg-gray-100 dark:bg-dark-700 rounded-lg p-4 text-center text-gray-500 dark:text-gray-400">
                     관전 중입니다. 다음 라운드부터 참여할 수 있습니다.
+                  </div>
+                )}
+
+                {/* 1등 완료 후 카운트다운 표시 */}
+                {game.countdown !== null && (
+                  <div className="mt-4 bg-orange-100 dark:bg-orange-900/20 rounded-lg p-3 text-center">
+                    <span className="text-orange-600 dark:text-orange-400 font-medium">
+                      라운드 종료까지 {game.countdown}초!
+                    </span>
                   </div>
                 )}
 

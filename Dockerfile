@@ -63,6 +63,9 @@ COPY --from=client-builder /app/client/dist ./public
 # shared 모듈 복사
 COPY shared/ ./shared/
 
+# shared/data 폴더를 dist 내부에도 복사 (서버에서 __dirname 기준 상대경로로 참조)
+COPY shared/data/ ./dist/shared/data/
+
 # 헬스체크 스크립트 복사
 COPY healthcheck.js ./
 

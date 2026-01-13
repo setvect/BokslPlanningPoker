@@ -18,7 +18,7 @@ function loadSentences(): SentenceData[] {
   return content
     .split('\n')
     .map(line => line.trim())
-    .filter(line => line.length > 0)
+    .filter(line => line.length > 0 && !line.startsWith('#'))
     .map((text, index) => ({
       id: index + 1,
       text,

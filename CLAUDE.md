@@ -170,6 +170,10 @@ SELECTING → REVEALED → [reset] → SELECTING
 - Socket 이벤트는 반드시 `shared/socket-events.ts`에 정의
 - 타입은 반드시 `shared/types.ts`에 정의
 
+## Git 커밋 규칙
+
+- 커밋 메시지에 "Co-Authored-By" 라인을 포함하지 않음
+
 ## 코드 스타일 가이드라인
 
 ### .cursorrules에서 가져온 규칙

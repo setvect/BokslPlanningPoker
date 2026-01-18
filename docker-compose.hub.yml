@@ -3,7 +3,7 @@ version: '3.8'
 
 services:
   planning-poker:
-    image: setvect/boksl-planning-poker:v1.0.0
+    image: setvect/boksl-planning-poker:v1.1.0
     container_name: planning-poker-hub
     ports:
       - "3000:3000"

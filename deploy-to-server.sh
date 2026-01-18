@@ -1,6 +1,6 @@
 #!/bin/bash
 # deploy-to-server.sh - 원격 서버 배포 스크립트
-# 생성 시각: Fri Jun  6 20:54:17 KST 2025
+# 생성 시각: 2026년 1월 13일 화요일 18시 14분 08초 KST
 
 set -e
 
@@ -10,7 +10,7 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 
 echo -e "${GREEN}🚀 복슬 플래닝 포커 배포 시작${NC}"
-echo -e "${BLUE}🐳 이미지: setvect/boksl-planning-poker:v1.0.0${NC}"
+echo -e "${BLUE}🐳 이미지: setvect/boksl-planning-poker:v1.1.0${NC}"
 
 # 기존 컨테이너 정지 및 제거
 echo "📋 기존 컨테이너 정리 중..."
@@ -19,7 +19,7 @@ docker rm planning-poker 2>/dev/null || true
 
 # 최신 이미지 다운로드
 echo "📥 최신 이미지 다운로드 중..."
-docker pull setvect/boksl-planning-poker:v1.0.0
+docker pull setvect/boksl-planning-poker:v1.1.0
 
 # 컨테이너 실행
 echo "🚀 컨테이너 실행 중..."
@@ -29,7 +29,7 @@ docker run -d \
   --restart unless-stopped \
   -e NODE_ENV=production \
   -e PORT=3000 \
-  setvect/boksl-planning-poker:v1.0.0
+  setvect/boksl-planning-poker:v1.1.0
 
 # 헬스체크
 echo "🔍 서비스 상태 확인 중..."

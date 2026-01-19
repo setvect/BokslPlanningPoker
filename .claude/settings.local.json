@@ -17,7 +17,11 @@
       "mcp__chrome-devtools__press_key",
       "mcp__chrome-devtools__get_console_message",
       "mcp__chrome-devtools__evaluate_script",
-      "mcp__chrome-devtools__wait_for"
+      "mcp__chrome-devtools__wait_for",
+      "Bash(brew list:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\n코드 리뷰 피드백 반영: any 타입을 DeckType으로 수정\n\n- client/src/App.tsx: deckType 파라미터 타입을 DeckType으로 변경\n- client/src/hooks/useGame.ts: deckType 파라미터 타입을 DeckType으로 변경\n- server/src/socket/handlers.ts: deckType 파라미터 및 기본값 처리 개선\nEOF\n\\)\")"
     ]
   },
   "enabledMcpjsonServers": [

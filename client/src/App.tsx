@@ -6,6 +6,7 @@ import { TypingMainPage } from './components/typing';
 import { useGame } from './hooks/useGame';
 import { STORAGE_KEYS } from '../../shared/constants.ts';
 import type { AppState } from './types';
+import type { DeckType } from '../../shared/types';
 
 // 로컬 스토리지에서 사용자 이름 가져오기
 const getSavedUserName = (): string => {
@@ -117,7 +118,7 @@ function PlanningPokerApp() {
   }, [game.isConnected, game.isConnecting, game.room]);
 
   // 방 생성 핸들러
-  const handleCreateRoom = useCallback(async (roomName: string, deckType?: any) => {
+  const handleCreateRoom = useCallback(async (roomName: string, deckType?: DeckType) => {
     const savedUserName = getSavedUserName();
     if (savedUserName) {
       try {

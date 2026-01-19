@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSocket } from './useSocket';
 import { STORAGE_KEYS } from '../../../shared/constants.ts';
-import type { 
-  Room, 
-  User, 
-  GameResult, 
-  PlanningPokerCard
+import type {
+  Room,
+  User,
+  GameResult,
+  PlanningPokerCard,
+  DeckType
 } from '../../../shared/types.ts';
 
 interface GameHookState {
@@ -86,7 +87,7 @@ export function useGame() {
   }, []);
 
   // 방 생성
-  const createRoom = useCallback(async (roomName: string, userName: string, deckType?: any) => {
+  const createRoom = useCallback(async (roomName: string, userName: string, deckType?: DeckType) => {
     try {
       setLoading(true);
       clearError();

@@ -46,7 +46,7 @@ class GameStore {
   private userRoomMap = new Map<string, string>(); // socketId -> roomId
   
   // 방 생성
-  createRoom(roomName: string, creator: User, deckType?: string): Room {
+  createRoom(roomName: string, creator: User, deckType?: DeckType): Room {
     if (this.rooms.size >= GAME_CONFIG.MAX_ROOMS) {
       throw new Error(ERROR_MESSAGES[ERROR_CODES.ROOM_LIMIT_REACHED]);
     }
@@ -62,7 +62,7 @@ class GameStore {
       createdAt: now,
       lastActivity: now,
       maxUsers: GAME_CONFIG.MAX_USERS_PER_ROOM,
-      deckType: (deckType as any) || 'modified_fibonacci' // 기본값: modified_fibonacci
+      deckType: deckType || DeckType.MODIFIED_FIBONACCI // 기본값: modified_fibonacci
     };
 
     this.rooms.set(roomId, room);

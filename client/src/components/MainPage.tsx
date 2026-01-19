@@ -3,9 +3,10 @@ import { useSocket } from '../hooks/useSocket'
 import AboutModal from './AboutModal'
 import { ThemeToggle } from './ThemeToggle'
 import type { Room } from '../../../shared/types'
+import { DeckType, DECK_LABELS } from '../../../shared/types'
 
 interface MainPageProps {
-  onCreateRoom: (roomName: string) => void
+  onCreateRoom: (roomName: string, deckType?: DeckType) => void
   onJoinRoom: (roomId: string, roomName: string) => void
   error?: string | null
   onClearError?: () => void
@@ -13,6 +14,7 @@ interface MainPageProps {
 
 export default function MainPage({ onCreateRoom, onJoinRoom, error, onClearError }: MainPageProps) {
   const [roomName, setRoomName] = useState('')
+  const [selectedDeckType, setSelectedDeckType] = useState<DeckType>(DeckType.MODIFIED_FIBONACCI)
   const [roomList, setRoomList] = useState<Room[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -54,7 +56,7 @@ export default function MainPage({ onCreateRoom, onJoinRoom, error, onClearError
   const handleCreateRoom = (e: React.FormEvent) => {
     e.preventDefault()
     if (roomName.trim()) {
-      onCreateRoom(roomName.trim())
+      onCreateRoom(roomName.trim(), selectedDeckType)
     }
   }
 
@@ -130,6 +132,20 @@ export default function MainPage({ onCreateRoom, onJoinRoom, error, onClearError
                   maxLength={50}
                   required
                 />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    덱 타입
+                  </label>
+                  <select
+                    value={selectedDeckType}
+                    onChange={(e) => setSelectedDeckType(e.target.value as DeckType)}
+                    className="w-full px-3 py-2 bg-white dark:bg-dark-700 border border-gray-300 dark:border-dark-600 rounded-lg text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 transition-colors"
+                  >
+                    <option value={DeckType.MODIFIED_FIBONACCI}>{DECK_LABELS[DeckType.MODIFIED_FIBONACCI]} (기본)</option>
+                    <option value={DeckType.POWERS_OF_TWO}>{DECK_LABELS[DeckType.POWERS_OF_TWO]}</option>
+                    <option value={DeckType.JIRA_STYLE}>{DECK_LABELS[DeckType.JIRA_STYLE]}</option>
+                  </select>
+                </div>
                 <button
                   type="submit"
                   className="btn btn-primary w-full"
@@ -181,15 +197,20 @@ export default function MainPage({ onCreateRoom, onJoinRoom, error, onClearError
                       className="flex items-center justify-between p-3 bg-gray-50 dark:bg-dark-700 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-600 transition-colors cursor-pointer"
                       onClick={() => onJoinRoom(room.id, room.name)}
                     >
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <div className="font-medium text-gray-900 dark:text-gray-100 truncate">
-                          {room.name}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className="font-medium text-gray-900 dark:text-gray-100 truncate">
+                            {room.name}
+                          </div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">
+                            {room.users.length}명
+                          </div>
                         </div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                          {room.users.length}명
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          덱: {DECK_LABELS[room.deckType]}
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 text-xs">
+                      <div className="flex items-center gap-2 text-xs flex-shrink-0">
                         {room.gameState === 'selecting' ? (
                           <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 px-2 py-1 rounded">
                             선택

@@ -86,12 +86,12 @@ export function useGame() {
   }, []);
 
   // 방 생성
-  const createRoom = useCallback(async (roomName: string, userName: string) => {
+  const createRoom = useCallback(async (roomName: string, userName: string, deckType?: any) => {
     try {
       setLoading(true);
       clearError();
 
-      const response = await socket.createRoom({ roomName, userName });
+      const response = await socket.createRoom({ roomName, userName, deckType });
       
       if (response.room && response.user) {
         setGameState(prev => ({

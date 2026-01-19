@@ -1,6 +1,6 @@
 import { Socket, Server } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
-import { 
+import {
   SOCKET_EVENTS,
   CreateRoomPayload,
   JoinRoomPayload,
@@ -23,7 +23,9 @@ import {
   GAME_CONFIG,
   ERROR_CODES,
   ERROR_MESSAGES,
-  Utils
+  Utils,
+  DeckType,
+  DECK_CARDS
 } from '../../../shared';
 
 // 서버용 타입 (shared와 호환되도록)
@@ -44,14 +46,14 @@ class GameStore {
   private userRoomMap = new Map<string, string>(); // socketId -> roomId
   
   // 방 생성
-  createRoom(roomName: string, creator: User): Room {
+  createRoom(roomName: string, creator: User, deckType?: string): Room {
     if (this.rooms.size >= GAME_CONFIG.MAX_ROOMS) {
       throw new Error(ERROR_MESSAGES[ERROR_CODES.ROOM_LIMIT_REACHED]);
     }
-    
+
     const roomId = this.generateRoomId();
     const now = new Date().toISOString();
-    
+
     const room: Room = {
       id: roomId,
       name: roomName,
@@ -59,12 +61,13 @@ class GameStore {
       gameState: GameState.SELECTING,
       createdAt: now,
       lastActivity: now,
-      maxUsers: GAME_CONFIG.MAX_USERS_PER_ROOM
+      maxUsers: GAME_CONFIG.MAX_USERS_PER_ROOM,
+      deckType: (deckType as any) || 'modified_fibonacci' // 기본값: modified_fibonacci
     };
-    
+
     this.rooms.set(roomId, room);
     this.userRoomMap.set(creator.socketId, roomId);
-    
+
     return room;
   }
   
@@ -141,22 +144,24 @@ class GameStore {
   selectCard(socketId: string, card: string): { room: Room, user: User, result?: GameResult } {
     const roomId = this.userRoomMap.get(socketId);
     if (!roomId) throw new Error(ERROR_MESSAGES[ERROR_CODES.USER_NOT_IN_ROOM]);
-    
+
     const room = this.rooms.get(roomId);
     if (!room) throw new Error(ERROR_MESSAGES[ERROR_CODES.ROOM_NOT_FOUND]);
-    
+
     const user = Array.from(room.users.values()).find(u => u.socketId === socketId);
     if (!user) throw new Error(ERROR_MESSAGES[ERROR_CODES.USER_NOT_FOUND]);
-    
+
     // SELECTING과 REVEALED 상태에서 모두 카드 선택 허용
     if (room.gameState !== GameState.SELECTING && room.gameState !== GameState.REVEALED) {
       throw new Error(ERROR_MESSAGES[ERROR_CODES.GAME_NOT_IN_PROGRESS]);
     }
-    
-    if (!GAME_CONFIG.CARDS.includes(card as any)) {
+
+    // 방의 덱 타입에 따라 허용된 카드인지 검증
+    const allowedCards = DECK_CARDS[room.deckType as DeckType];
+    if (!allowedCards.includes(card as any)) {
       throw new Error(ERROR_MESSAGES[ERROR_CODES.INVALID_CARD]);
     }
-    
+
     user.selectedCard = card as any;
     user.lastActivity = new Date().toISOString();
     room.lastActivity = new Date().toISOString();
@@ -426,22 +431,22 @@ export function setupSocketHandlers(io: Server) {
     // 방 생성
     socket.on(SOCKET_EVENTS.CREATE_ROOM, (data: CreateRoomPayload, callback: (response: CreateRoomResponse) => void) => {
       try {
-        console.log(`🔍 방 생성 시도: ${data.userName} -> 방이름 "${data.roomName}"`);
-        
+        console.log(`🔍 방 생성 시도: ${data.userName} -> 방이름 "${data.roomName}", 덱타입: ${data.deckType || 'modified_fibonacci'}`);
+
         if (!Utils.validateRoomName(data.roomName)) {
           return callback({
             success: false,
             error: { code: ERROR_CODES.INVALID_ROOM_NAME, message: ERROR_MESSAGES[ERROR_CODES.INVALID_ROOM_NAME] }
           });
         }
-        
+
         if (!Utils.validateUserName(data.userName)) {
           return callback({
             success: false,
             error: { code: ERROR_CODES.INVALID_USER_NAME, message: ERROR_MESSAGES[ERROR_CODES.INVALID_USER_NAME] }
           });
         }
-        
+
         const user: User = {
           id: uuidv4(),
           name: data.userName,
@@ -452,8 +457,8 @@ export function setupSocketHandlers(io: Server) {
           lastActivity: new Date().toISOString(),
           socketId: socket.id
         };
-        
-        const room = gameStore.createRoom(data.roomName, user);
+
+        const room = gameStore.createRoom(data.roomName, user, data.deckType);
         user.roomId = room.id;
         
         console.log(`🔍 방 생성 후 상태: 방 ${room.id} 사용자 수: ${room.users.size}`);

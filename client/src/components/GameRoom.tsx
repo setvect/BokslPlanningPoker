@@ -5,6 +5,7 @@ import CardSelectionModal from './CardSelectionModal';
 import { useState } from 'react';
 import { FaCoffee } from 'react-icons/fa';
 import { STORAGE_KEYS } from '../../../shared/constants';
+import { DeckType, DECK_CARDS, DECK_LABELS } from '../../../shared/types';
 
 interface GameRoomProps {
   roomId: string
@@ -26,8 +27,10 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
   const [isEditingRoomName, setIsEditingRoomName] = useState(false);
   const [editingRoomName, setEditingRoomName] = useState('');
 
-  // 플래닝 포커 카드 덱
-  const cards: PlanningPokerCard[] = ['0', '1/2', '1', '2', '3', '5', '8', '13', '20', '40', '60', '100', '?', '커피'];
+  // 플래닝 포커 카드 덱 (방의 덱 타입에 따라 결정)
+  const cards = game.room?.deckType
+    ? DECK_CARDS[game.room.deckType]
+    : DECK_CARDS[DeckType.MODIFIED_FIBONACCI];
 
   console.log('🔍 GameRoom 렌더링:', {
     room: game.room,
@@ -200,7 +203,12 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
               </div>
             ) : (
               <div className="relative group flex items-center gap-2 flex-1 min-w-0">
-                <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100 truncate">{currentRoom?.name || roomName}</h1>
+                <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100 truncate">
+                  {currentRoom?.name || roomName}
+                  <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ml-2">
+                    ({DECK_LABELS[currentRoom?.deckType || DeckType.MODIFIED_FIBONACCI]})
+                  </span>
+                </h1>
                 <button
                   onClick={startEditingRoomName}
                   className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400 flex-shrink-0"
@@ -444,6 +452,7 @@ export default function GameRoom({ roomId, roomName, userName, onLeave, game }: 
         selectedCard={game.currentUser?.selectedCard || null}
         onSelectCard={game.selectCard}
         loading={game.loading}
+        deckType={game.room?.deckType}
       />
 
       {/* 에러 표시 - 여백 최적화 */}

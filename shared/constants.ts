@@ -1,31 +1,24 @@
-import { PLANNING_POKER_CARDS } from './types';
-
 // 게임 설정 상수
 export const GAME_CONFIG = {
   // 방 관련
   MAX_ROOMS: 10,
   MAX_USERS_PER_ROOM: 20,
   MIN_USERS_FOR_GAME: 1,
-  
+
   // 시간 제한 (분 단위)
   ROOM_INACTIVE_TIMEOUT: 60, // 1시간
   ROOM_CLEANUP_INTERVAL: 5,   // 5분마다 정리
   USER_DISCONNECT_TIMEOUT: 30, // 30초 후 사용자 제거
-  
+
   // 재연결 설정
   RECONNECT_ATTEMPTS: 3,
   RECONNECT_DELAY: 1000, // 1초
-  
+
   // 입력 제한
   MAX_ROOM_NAME_LENGTH: 50,
   MAX_USER_NAME_LENGTH: 20,
   MIN_ROOM_NAME_LENGTH: 1,
   MIN_USER_NAME_LENGTH: 1,
-  
-  // 카드 관련
-  CARDS: PLANNING_POKER_CARDS,
-  NUMERIC_CARDS: ['0', '1/2', '1', '2', '3', '5', '8', '13', '20', '40', '60', '100'],
-  SPECIAL_CARDS: ['?', '커피'],
 } as const;
 
 // 에러 코드 상수 (실제 사용되는 것만)

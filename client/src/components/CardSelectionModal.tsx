@@ -1,6 +1,7 @@
 import React from 'react';
 import type { PlanningPokerCard } from '../types';
 import { FaCoffee } from 'react-icons/fa';
+import { DeckType, DECK_CARDS } from '../../../shared/types';
 
 interface CardSelectionModalProps {
   isOpen: boolean;
@@ -8,17 +9,19 @@ interface CardSelectionModalProps {
   selectedCard: PlanningPokerCard | null;
   onSelectCard: (card: PlanningPokerCard) => void;
   loading: boolean;
+  deckType?: DeckType;
 }
 
-export default function CardSelectionModal({ 
-  isOpen, 
-  onClose, 
-  selectedCard, 
-  onSelectCard, 
-  loading 
+export default function CardSelectionModal({
+  isOpen,
+  onClose,
+  selectedCard,
+  onSelectCard,
+  loading,
+  deckType = DeckType.MODIFIED_FIBONACCI
 }: CardSelectionModalProps) {
-  // 플래닝 포커 카드 덱
-  const cards: PlanningPokerCard[] = ['0', '1/2', '1', '2', '3', '5', '8', '13', '20', '40', '60', '100', '?', '커피'];
+  // 플래닝 포커 카드 덱 (방의 덱 타입에 따라 결정)
+  const cards = DECK_CARDS[deckType];
 
   // 카드별 특수 스타일 클래스 반환
   const getCardSpecialClass = (card: PlanningPokerCard) => {

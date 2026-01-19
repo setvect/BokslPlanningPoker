@@ -1,10 +1,33 @@
-// 플래닝 포커 카드 타입
-export const PLANNING_POKER_CARDS = [
-  '0', '1/2', '1', '2', '3', '5', '8', '13', 
-  '20', '40', '60', '100', '?', '커피'
-] as const;
+// 덱 타입 정의
+export enum DeckType {
+  MODIFIED_FIBONACCI = 'modified_fibonacci',
+  POWERS_OF_TWO = 'powers_of_two',
+  JIRA_STYLE = 'jira_style'
+}
 
-export type PlanningPokerCard = typeof PLANNING_POKER_CARDS[number];
+// 덱별 카드 배열 정의
+export const DECK_CARDS = {
+  [DeckType.MODIFIED_FIBONACCI]: ['0', '1/2', '1', '2', '3', '5', '8', '13', '20', '40', '60', '100', '?', '커피'],
+  [DeckType.POWERS_OF_TWO]: ['0', '1', '2', '4', '8', '16', '32', '64', '?', '커피'],
+  [DeckType.JIRA_STYLE]: ['0', '0.5', '1', '2', '3', '5', '8', '13', '21', '?', '커피']
+} as const;
+
+// 덱 표시 이름
+export const DECK_LABELS = {
+  [DeckType.MODIFIED_FIBONACCI]: '수정된 피보나치',
+  [DeckType.POWERS_OF_TWO]: '2의 거듭제곱',
+  [DeckType.JIRA_STYLE]: 'Jira 스타일'
+} as const;
+
+// 플래닝 포커 카드 타입 (하위 호환성을 위해 유지)
+export const PLANNING_POKER_CARDS = DECK_CARDS[DeckType.MODIFIED_FIBONACCI];
+
+// 모든 덱의 카드 유니온 타입
+type ModifiedFibonacciCard = typeof DECK_CARDS[DeckType.MODIFIED_FIBONACCI][number];
+type PowersOfTwoCard = typeof DECK_CARDS[DeckType.POWERS_OF_TWO][number];
+type JiraStyleCard = typeof DECK_CARDS[DeckType.JIRA_STYLE][number];
+
+export type PlanningPokerCard = ModifiedFibonacciCard | PowersOfTwoCard | JiraStyleCard;
 
 // 사용자 타입
 export interface User {
@@ -27,6 +50,7 @@ export interface Room {
   createdAt: string;
   lastActivity: string;
   maxUsers: number;
+  deckType: DeckType; // 덱 타입 추가
 }
 
 // 게임 상태
@@ -70,6 +94,7 @@ export interface CreateRoomPayload {
   roomName: string;
   userName: string;
   maxUsers?: number;
+  deckType?: DeckType; // 덱 타입 추가 (선택적, 기본값: MODIFIED_FIBONACCI)
 }
 
 export interface SelectCardPayload {

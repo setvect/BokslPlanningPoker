@@ -117,11 +117,11 @@ function PlanningPokerApp() {
   }, [game.isConnected, game.isConnecting, game.room]);
 
   // 방 생성 핸들러
-  const handleCreateRoom = useCallback(async (roomName: string) => {
+  const handleCreateRoom = useCallback(async (roomName: string, deckType?: any) => {
     const savedUserName = getSavedUserName();
     if (savedUserName) {
       try {
-        const roomId = await game.createRoom(roomName, savedUserName);
+        const roomId = await game.createRoom(roomName, savedUserName, deckType);
         if (roomId) {
           updateUrl(roomId); // URL을 /room/{roomId}로 변경
           setAppState('game');

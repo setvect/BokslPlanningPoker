@@ -1,6 +1,6 @@
 #!/bin/bash
 # deploy-to-server.sh - 원격 서버 배포 스크립트
-# 생성 시각: 2026년 1월 13일 화요일 18시 14분 08초 KST
+# 생성 시각: Tue Jan 13 18:57:42 KST 2026
 
 set -e
 
